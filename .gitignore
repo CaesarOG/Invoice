@@ -1,0 +1,25 @@
+*.exe
+.DS_Store
+.vscode/
+client/node_modules/
+client/build/node_modules/
+client/build/
+bin/
+pkg/
+server/server
+go.sum
+package-lock.json
+.env
+.pwd
+__debug_bin
+npm-debug.log
+*.code-workspace
+
+#https://stackoverflow.com/questions/6313126/how-to-remove-a-directory-from-git-repository : git rm -r --cached myFolder
+#https://stackoverflow.com/questions/2389361/undo-a-git-merge-that-hasnt-been-pushed-yet?rq=1
+#http://stackoverflow.com/questions/24322896/git-push-http-code-502-error 
+<<<<<<< HEAD
+#https://stackoverflow.com/questions/11228436/failed-to-lock-refs-heads-master
+=======
+#https://stackoverflow.com/questions/11228436/failed-to-lock-refs-heads-master
+>>>>>>> 6803a38 (first)
