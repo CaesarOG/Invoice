@@ -57,7 +57,7 @@ export interface Login extends Register {
 
 /*------EPIC-ACTIONS----------------------------------------------------------------------------------------------------------------------------------------*/
 export type signReq = {email: string, password: string}; export type signSucc = {user: User, email: string, password: string};
-export type regSucc = {firstName: string, lastName: string, email: string, password: string, confirmPassword: string, isCust: boolean, isContr: boolean}; 
+export type regSucc = {firstName: string, lastName: string, email: string, password: string, confirmPassword: string, isCust: boolean, isContr: boolean, user: User}; 
 
 export type editcr8Req = {invoice: Invoice, editOrCr8: string, id?: string, materials: FrgnField[], materialsChecked: string[], stringtoMats: {[x: string]: any}}
 export type editcr8Succ = {invoice: Invoice}

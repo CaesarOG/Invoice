@@ -28,7 +28,7 @@ const regReducer: Reducer<RegisterState, RegisterAction> = (state: RegisterState
                 ...state, errOpen: action.payload.errOpen, error: action.payload.error
             }
         case getType(RegisterAction.doReg.success):
-        console.log("state "+state)
+            setTimeout(() => history.push('/', {...(action.payload), user: action.payload.user}), 100)
             return {
                 ...state, firstName: action.payload.firstName, lastName: action.payload.lastName, email: action.payload.email, 
                     password: action.payload.password, confirmPassword: action.payload.confirmPassword

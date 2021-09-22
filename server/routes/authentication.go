@@ -35,8 +35,8 @@ func Login(ctx *fasthttp.RequestCtx) {
 		return
 	}
 
-	user := models.User{}
-	err := models.GetDB().Model(&models.User{}).Where("email = ?", userAttempt.Email).Preload("Invoices").First(&user).Error
+	user := models.Usertype{}
+	err := models.GetDB().Model(&models.Usertype{}).Where("email = ?", userAttempt.Email).Preload("Invoices").First(&user).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			middleware.ResponseMaker(ctx, fasthttp.StatusUnauthorized, false, "Email Address Not Found.", "noData")
@@ -88,7 +88,7 @@ func Register(ctx *fasthttp.RequestCtx) {
 	userAttempt := &userReq{}
 	body := ctx.Request.Body()
 	errJ := json.NewDecoder(bytes.NewReader(body)).Decode(userAttempt)
-	user := models.User{FirstName: userAttempt.FirstName, LastName: userAttempt.LastName, Email: userAttempt.Email, Password: userAttempt.Password,
+	user := models.Usertype{FirstName: userAttempt.FirstName, LastName: userAttempt.LastName, Email: userAttempt.Email, Password: userAttempt.Password,
 		FullName: userAttempt.FirstName + " " + userAttempt.LastName, Role: userAttempt.Role}
 
 	//errJ := json.Unmarshal(body, user)
@@ -99,8 +99,8 @@ func Register(ctx *fasthttp.RequestCtx) {
 		return
 	}
 
-	temp := &models.User{}
-	err := models.GetDB().Model(&models.User{}).Where("email = ?", userAttempt.Email).First(temp).Error
+	temp := &models.Usertype{}
+	err := models.GetDB().Model(&models.Usertype{}).Where("email = ?", userAttempt.Email).First(temp).Error
 	if err != nil && err != gorm.ErrRecordNotFound { //need NotFound to make new account,  if it's not that then:
 		pretty.Println("error!: " + err.Error())
 		middleware.ResponseMaker(ctx, fasthttp.StatusInternalServerError, false, "Connection Error.", "noData")

@@ -18,7 +18,7 @@ action$, state$,
 ) => 
 action$.pipe(
     filter(isActionOf(doReg.request)), 
-    switchMap( (action: any) => { //i wish I could  any to register.request and destructure action.payload here https://stackoverflow.com/questions/38946387/cast-function-parameter-type-in-typescript
+    switchMap( (action) => {
         let { firstName, lastName, email, password, confirmPassword, isContr, isCust } = state$.value.RegisterReducer
         if(email === "" || password === "") {
             return of ( doReg.failure({error: 'Email Or Password Was Blank.', errOpen: true}))
@@ -35,7 +35,7 @@ action$.pipe(
                 (data: Register) => {
                     localStorage.saveItem('user', data.user)
                     localStorage.saveItem('token', data.token)
-                    return of( doReg.success({firstName: "", lastName: "", email: "", password: "", confirmPassword: "", isCust: false, isContr: false}))
+                    return of( doReg.success({firstName: "", lastName: "", email: "", password: "", confirmPassword: "", isCust: false, isContr: false, user: data.user}))
                 }
             ),
             catchError(

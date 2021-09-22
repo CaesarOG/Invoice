@@ -7,7 +7,7 @@ import (
 	_ "github.com/startupXchange-team/gorm/dialects/postgres" //blabla
 )
 
-type User struct {
+type Usertype struct {
 	gorm.Model
 	Email         string              `json:"email"`
 	Password      string              `json:"password"`

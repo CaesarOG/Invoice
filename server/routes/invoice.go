@@ -196,7 +196,7 @@ func GetFormItems(ctx *fasthttp.RequestCtx) {
 		return
 	}
 	custEmails := []string{}
-	cust := &[]models.User{}
+	cust := &[]models.Usertype{}
 	models.GetDB().Table("user").Where("role = ?", "Customer").Find(cust)
 	for _, cust := range *cust {
 		custEmails = append(custEmails, cust.Email)

@@ -115,14 +115,14 @@ func Start(db *gorm.DB) error {
 		{
 			ID: "database",
 			Migrate: func(tx *gorm.DB) error {
-				tx.DropTableIfExists(&Material{}, &Invoice{}, &Note{}, &User{})
+				tx.DropTableIfExists(&Material{}, &Invoice{}, &Note{}, &Usertype{})
 				pretty.Println("TRYING")
 				//errC := nil
-				errC := tx.CreateTable(&Material{}, &Invoice{}, &Note{}, &User{}).Error
+				errC := tx.CreateTable(&Material{}, &Invoice{}, &Note{}, &Usertype{}).Error
 				if errC == nil {
-					tx.Model(&Material{}).AddForeignKey("invoice_id", "invoices(id)", "RESTRICT", "RESTRICT")
-					tx.Model(&Note{}).AddForeignKey("invoice_id", "invoices(id)", "RESTRICT", "RESTRICT")
-					tx.Model(&Invoice{}).AddForeignKey("user_id", "users(id)", "RESTRICT", "RESTRICT")
+					tx.Model(&Note{}).AddForeignKey("invoice_id", "invoice(id)", "RESTRICT", "RESTRICT")
+					tx.Model(&Invoice{}).AddForeignKey("cust_id", "usertype(id)", "RESTRICT", "RESTRICT")
+					tx.Model(&Invoice{}).AddForeignKey("contr_id", "usertype(id)", "RESTRICT", "RESTRICT")
 					pretty.Println("CREATION AND KEYS SHOULD HAVE WORKED.")
 					InvoicesFromCSV()
 				}
@@ -165,12 +165,13 @@ func InvoicesFromCSV() {
 	} else {
 		daysAdd = 1
 	}
-	neeraj, rajiv := &User{}, &User{}
+	neeraj, rajiv := &Usertype{}, &Usertype{}
+	a, b := &Usertype{}, &Usertype{}
 	neeraj.Email, rajiv.Email = "neerajram108@gmail.com", "rajivprabhakar@gmail.com"
 	db.Create(neeraj)
 	db.Create(rajiv)
-	db.Model(&User{}).Where("email = ?", `neerajram108@gmail.com`).Find(neeraj)
-	db.Model(&User{}).Where("email = ?", `rajivprabhakar@gmail.com`).Find(rajiv)
+	db.Model(&Usertype{}).Where("email = ?", `neerajram108@gmail.com`).Find(a)
+	db.Model(&Usertype{}).Where("email = ?", `rajivprabhakar@gmail.com`).Find(a)
 	for _, line := range linesMat {
 		mat := &Material{Name: line[0]}
 		db.Create(mat)
@@ -191,7 +192,7 @@ func InvoicesFromCSV() {
 			status = []string{"Paid", "Outstanding"}[rand.Intn(2)]
 		}
 		invoice := &Invoice{Name: line[0], CustEmail: line[1], ContrEmail: line[2], Description: line[3], BillableHours: bHrs,
-			WageRate: wR, SupplyCost: suppCost, Status: status, DueDate: due, CustID: neeraj.ID, ContrID: rajiv.ID,
+			WageRate: wR, SupplyCost: suppCost, Status: status, DueDate: due, CustID: a.ID, ContrID: b.ID,
 		}
 
 		db.Create(invoice)

@@ -264,7 +264,7 @@ class Header extends React.Component<PropsH, {}> {
                 <MenuI classes={{ root: classnames(classes.headerIcon, classes.headerIconCollapse) }} />
               )}
           </IconButton>
-          <Typography variant="h6" weight="medium" color="primary" className={classnames(classes.grow, classes.logotype)} > startupXchange </Typography>
+          <Typography variant="h6" weight="medium" color="primary" className={classnames(classes.grow, classes.logotype)} > Invoice </Typography>
           <div className={classnames(classes.search, { [classes.searchFocused]: isSearchOpen })} >
             <div className={classnames(classes.searchIcon, { [classes.searchIconOpened]: isSearchOpen })}
               onClick={toggleSearch}
