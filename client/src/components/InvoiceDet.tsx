@@ -2,25 +2,25 @@ import React from 'react'
 import { connect, MapStateToProps } from 'react-redux' //MapDispatchToProps
 import { ActionType } from 'typesafe-actions'
 import { RootState } from 'MyTypes'
-import { Grid, Theme, withStyles, createStyles, WithStyles } from '@material-ui/core';
+import { Grid, Theme, withStyles, createStyles, WithStyles, List, ListItem, ListItemAvatar, ListItemText,
+Avatar, Divider, Button } from '@material-ui/core';
 import { ResponsiveContainer } from 'recharts';
-import { CompanyDetAction } from '../actions' 
+import { InvoiceDetAction } from '../actions'
+import { obj } from '../actions/services/models'
 import { Widget, Typography } from './WidgetAndWrappers'
-import { CompanyDetState } from '../reducers/InvoiceDetReducer'
-import MUIDataTable from 'mui-datatables'
+import { InvoiceDetState } from '../reducers/InvoiceDetReducer'
 import { RouteComponentProps } from 'react-router-dom';
 
 //before it was a function that manually said return and the object
-const mapStateToProps: MapStateToProps<CompanyDetState, {}, RootState> = (state: RootState) => ({
-  company: state.CompanyDetReducer.company
+const mapStateToProps: MapStateToProps<InvoiceDetState, {}, RootState> = (state: RootState) => ({
+  ...(state.InvoiceDetReducer)
 });
 
-type CompanyDetAction = ActionType<typeof CompanyDetAction>;
+type InvoiceDetAction = ActionType<typeof InvoiceDetAction>;
 //Map Redux Actions to component props
 const mapDispatchToProps = {
-  getCmpy: CompanyDetAction.cmpyDet.request,
-  clickFounder: CompanyDetAction.clickFounDet,
-  clickPrincDiv: CompanyDetAction.clickFounDet
+  getInvc: InvoiceDetAction.getInvoice.request,
+  clickEdit: InvoiceDetAction.editcr8,
 }
 
 type StateProps = ReturnType<typeof mapStateToProps>; 
@@ -28,47 +28,48 @@ type DispatchProps = typeof mapDispatchToProps;
 type OwnProps = WithStyles<typeof styles> & RouteComponentProps<any> & {theme: Theme};
 type Props = StateProps & DispatchProps & OwnProps;
 
-class CompanyDet extends React.Component<Props, {}> {
+class InvoiceDet extends React.Component<Props, {}> {
 
   componentDidMount() {//https://tylermcginnis.com/react-router-query-strings/
     const id = this.props.match.params.id as string
-    this.props.getCmpy(id!)
+    let invoice = (this.props.location.state! as obj) && (this.props.location.state! as obj).invoice
+    let user = (this.props.location.state! as obj) && (this.props.location.state! as obj).user
+    if (invoice.name && invoice.name !== "") {
+      this.props.getInvc({user, id})
+    } else this.props.getInvc({user, inv: invoice, id})
   }
 
-
   render() {
-    const { company, classes, clickFounder, clickPrincDiv } = this.props
-    let cmpyLoaded = Boolean(company.principal)
-    const fuckyourselfyoucrypticasshole = [{ID: '5', email: 'a', phone: '', user: {lastName: 'fahk'}}, {ID: '5', email: 'a', phone: '', user: {lastName: 'fahk'}}]
-    return ( 
+    const { classes, invoice, user } = this.props
+    return (
       <div className={classes.root}>
         <Grid container spacing={5} alignItems="center" direction="row" justify="space-evenly">
           <Grid item lg={4} md={4} sm={6} xs={12}>
-            { cmpyLoaded && 
-            <Widget title="Contact Details" bodyClass={classes.fullHeightBody} className={classes.card}>
-              <div className={classes.serverOverviewElement} onClick={() => clickPrincDiv(company.principal!.ID)}>
-                <Typography colorBrightness="dark" variant="h5" className={classes.serverOverviewElementText}> Principal's Name </Typography>
+            { invoice && 
+            <Widget title="Invoice Details" bodyClass={classes.fullHeightBody} className={classes.card}>
+              <div className={classes.serverOverviewElement}>
+                <Typography colorBrightness="dark" variant="h5" className={classes.serverOverviewElementText}> Invoice's Name </Typography>
                 <div className={classes.serverOverviewElementChartWrapper}>
                   <ResponsiveContainer height={50} width="99%"> 
                     <Typography colorBrightness="dark" className={classes.serverOverviewElementText}>
-                      {company.principal!.user.firstName + " " + company.principal!.user.lastName}
+                      {invoice.name}
                     </Typography>
                   </ResponsiveContainer>
                 </div>
               </div>
-              <div className={classes.serverOverviewElement} onClick={() => clickPrincDiv(company.principal!.ID)}>
-                <Typography colorBrightness="dark" variant="h5" className={classes.serverOverviewElementText}> Principal's Email </Typography>
+              <div className={classes.serverOverviewElement}>
+                <Typography colorBrightness="dark" variant="h5" className={classes.serverOverviewElementText}> Description </Typography>
                 <div className={classes.serverOverviewElementChartWrapper}>
                   <ResponsiveContainer height={50} width="99%">
-                    <Typography colorBrightness="dark" className={classes.serverOverviewElementText}> {company.principal!.user.email} </Typography>
+                    <Typography colorBrightness="dark" className={classes.serverOverviewElementText}> {invoice.description} </Typography>
                   </ResponsiveContainer>
                 </div>
               </div>
-              <div className={classes.serverOverviewElement} onClick={() => clickPrincDiv(company.principal!.ID)}>
-                <Typography colorBrightness="dark" variant="h5" className={classes.serverOverviewElementText}> Principal's Phone </Typography>
+              <div className={classes.serverOverviewElement}>
+                <Typography colorBrightness="dark" variant="h5" className={classes.serverOverviewElementText}> Due Date Month </Typography>
                 <div className={classes.serverOverviewElementChartWrapper}>
                   <ResponsiveContainer height={50} width="99%"> 
-                    <Typography colorBrightness="dark" className={classes.serverOverviewElementText}> {company.principal!.phone} </Typography>
+                    <Typography colorBrightness="dark" className={classes.serverOverviewElementText}> {invoice.due.getMonth()} </Typography>
                   </ResponsiveContainer>
                 </div>
               </div>
@@ -76,46 +77,87 @@ class CompanyDet extends React.Component<Props, {}> {
             }
           </Grid>
           <Grid item lg={4} md={4} sm={6} xs={12}>
-            { cmpyLoaded &&
+            { invoice &&
             <Widget title="Address and Industry" bodyClass={classes.fullHeightBody} className={classes.card}>
               <div className={classes.serverOverviewElement}>
-                <Typography colorBrightness="dark" variant="h5" className={classes.serverOverviewElementText}> Street Address </Typography>
+                <Typography colorBrightness="dark" variant="h5" className={classes.serverOverviewElementText}> Billable Hours </Typography>
                 <div className={classes.serverOverviewElementChartWrapper}>
                   <ResponsiveContainer height={50} width="99%"> 
-                    <Typography colorBrightness="dark" className={classes.serverOverviewElementText}> {company.address} </Typography>
+                    <Typography colorBrightness="dark" className={classes.serverOverviewElementText}> {invoice.billableHrs} </Typography>
                   </ResponsiveContainer>
                 </div>
               </div>
               <div className={classes.serverOverviewElement}>
-                <Typography colorBrightness="dark" variant="h5" className={classes.serverOverviewElementText}> State </Typography>
+                <Typography colorBrightness="dark" variant="h5" className={classes.serverOverviewElementText}> Total $ Cost </Typography>
                 <div className={classes.serverOverviewElementChartWrapper}>
                   <ResponsiveContainer height={50} width="99%"> 
-                    <Typography colorBrightness="dark" className={classes.serverOverviewElementText}> {company.state} </Typography>
+                    <Typography colorBrightness="dark" className={classes.serverOverviewElementText}> $ {invoice.billableHrs * invoice.wageRate} </Typography>
                   </ResponsiveContainer>
                 </div>
               </div>
               <div className={classes.serverOverviewElement}>
-                <Typography colorBrightness="dark" variant="h5" className={classes.serverOverviewElementText}> Industry </Typography>
+                <Typography colorBrightness="dark" variant="h5" className={classes.serverOverviewElementText}> Cost of Supplies </Typography>
                 <div className={classes.serverOverviewElementChartWrapper}>
                   <ResponsiveContainer height={50} width="99%"> 
-                    <Typography colorBrightness="dark" className={classes.serverOverviewElementText}> {company.industry} </Typography>
+                    <Typography colorBrightness="dark" className={classes.serverOverviewElementText}> {invoice.supplyCost} </Typography>
                   </ResponsiveContainer>
                 </div>
               </div>
             </Widget>
             }
           </Grid>
-          { (company && company.founders) && (
-          <Grid item xs={12}>
-            <MUIDataTable title="Founders" data={fuckyourselfyoucrypticasshole} columns={[ {name: 'ID', options: {display: "excluded"}}, {name: "email", label: "Email"}, 
-              {name: "phone", label: "Phone"}, {name: "user.lastName", label: "Founder Name" } ]}
-              options={{
-                filterType: "dropdown" as any, responsive: 'scroll' as any, download: false, print: false, pagination: false, search: false, 
-                onRowClick: (rowData) => clickFounder(rowData[0]), serverSide: true, selectableRows: 'none'
-              }} 
-            />
+          <Grid item lg={4} md={4} sm={6} xs={12}>
+            <List > {/*sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}*/}
+              {invoice.materials.map((mat, idx) => (
+                <React.Fragment>
+                <ListItem alignItems="flex-start">
+                <ListItemAvatar>
+                  <Avatar alt="Material">M</Avatar>
+                </ListItemAvatar>
+                <ListItemText primary="Material" secondary = {
+                    <React.Fragment>
+                      <Typography variant="body2">
+                        Material Name
+                      </Typography>
+                      {mat.name!}
+                    </React.Fragment>
+                  }
+                />
+              </ListItem>
+              { idx !== invoice.materials.length - 1 && <Divider variant="inset" component="li" /> }
+              </React.Fragment>
+              )) }
+            </List>
           </Grid>
-          )}
+          <Grid item xs={12}>
+            <List > {/*sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}*/}
+              {invoice.notes.map((note, idx) => (
+                <React.Fragment>
+                <ListItem alignItems="flex-start">
+                <ListItemAvatar>
+                  <Avatar alt="Note">NT</Avatar>
+                </ListItemAvatar>
+                <ListItemText primary="Note on Invoice" secondary = {
+                    <React.Fragment>
+                      <Typography variant="body2">
+                        Note Name
+                      </Typography>
+                      {note.message!}
+                    </React.Fragment>
+                  }
+                />
+              </ListItem>
+              { idx !== invoice.notes.length - 1 && <Divider variant="inset" component="li" /> }
+              </React.Fragment>
+              )) }
+            </List>
+          </Grid>
+          { (user && user.role && user.role === "Contractor") && 
+          <Grid item xs={12}>
+            <Button variant="contained" color="primary"  
+              className={classes.button}> {} </Button>
+          </Grid>
+          }
         </Grid>
       </div>
     );
@@ -288,13 +330,13 @@ const styles = (theme: Theme) => createStyles({
   },
 });
 
-const stylesCompanyDet = withStyles(styles, { withTheme: true })(CompanyDet)
+const stylesInvoiceDet = withStyles(styles, { withTheme: true })(InvoiceDet)
 
 //Connected Component
-const connectedCompanyDet = connect<StateProps, DispatchProps, {}, RootState>(
+const connectedInvoiceDet = connect<StateProps, DispatchProps, {}, RootState>(
     mapStateToProps,
     mapDispatchToProps
-)(stylesCompanyDet);
+)(stylesInvoiceDet);
 
-export { connectedCompanyDet as CompanyDet }
+export { connectedInvoiceDet as InvoiceDet }
 

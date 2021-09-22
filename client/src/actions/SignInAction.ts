@@ -4,7 +4,7 @@ import { switchMap, mergeMap, filter, catchError } from 'rxjs/operators'
 import { from, of } from 'rxjs'
 import {RootAction, RootState, Services } from 'MyTypes'
 import { HeaderAction } from '.'
-import { Res, signReq, epicErr, signSucc, Login, FrgnField } from './services/models'
+import { Res, signReq, epicErr, signSucc, Login } from './services/models'
 
 const doSign = createAsyncAction(
     '@@signin/SIGNIN_REQUEST',
@@ -29,7 +29,7 @@ action$.pipe(
                 (data: Login) => {
                     localStorage.saveItem('user', data.user)
                     localStorage.saveItem('token', data.token)
-                        return of ( HeaderAction.setSignedIn(data.user), doSign.success({ 
+                        return of ( HeaderAction.setUserSigned(data.user), doSign.success({ 
                             email: "", password: "", user: data.user
                         }) )
 
@@ -68,15 +68,6 @@ const toSignUp = createAction('@@signin/TO_SIGN_UP',
         return { email: "", password: "" }
     }
 )()
-
-const isFounder = (roles: FrgnField[]):boolean => {
-    for (let i = 0; i < roles.length; i++) {
-      if(roles[i].payload === 'Founder') {
-        return true
-      }
-    }
-    return false
-}
 
 
 const signinActions = {

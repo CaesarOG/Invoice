@@ -1,21 +1,17 @@
 import React from 'react'
 import { ActionType } from 'typesafe-actions'
 import { RootState } from 'MyTypes'
-import { connect, MapStateToProps, ConnectedComponent } from 'react-redux' //MapDispatchToProps
+import { connect, MapStateToProps } from 'react-redux' //MapDispatchToProps
 import classnames from 'classnames'
 import { Paper, IconButton, Menu, MenuItem, withStyles, WithStyles, makeStyles,
-  withTheme, createStyles, Theme, Badge as BadgeBase, Select, Grid,
-  Typography as TypographyBase, Button as ButtonBase, Input, Slider as SliderBase, Dialog, 
-  DialogTitle, DialogContent, DialogActions, DialogContentText, SliderProps, ButtonProps } from '@material-ui/core'
-import { green } from '@material-ui/core/colors'
-import { BarChart, Bar, XAxis, YAxis } from 'recharts'
+  withTheme, createStyles, Theme, Badge as BadgeBase,
+  Typography as TypographyBase, Button as ButtonBase, ButtonProps } from '@material-ui/core'
 import { MoreVert as MoreIcon } from '@material-ui/icons'
 import { TypographyProps } from '@material-ui/core/Typography'
 import { BadgeProps } from '@material-ui/core/Badge'
 import { WidgetAction } from '../actions' 
-import { createPropsGetter, obj } from '../actions/services/models';
-import { RouteComponentProps } from 'react-router';
-import { WidgetState, widgInitialState, BigStatState, bgStInitialState, SliderState, slInitialState, PayWallState } from '../reducers/WidgetReducer'
+import { createPropsGetter } from '../actions/services/models';
+import { WidgetState, widgInitialState } from '../reducers/WidgetReducer'
 import { Variant } from '@material-ui/core/styles/createTypography';
 
 

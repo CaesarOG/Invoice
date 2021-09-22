@@ -3,7 +3,7 @@ import { Epic } from 'redux-observable'
 import { switchMap, mergeMap, filter, catchError } from 'rxjs/operators'
 import { from, of } from 'rxjs'
 import {RootAction, RootState, Services } from 'MyTypes'
-import { Res, epicErr, Invoice, editcr8Req, editcr8Succ, FrgnField, getFormSucc } from './services/models'
+import { Res, epicErr, Invoice, editcr8Req, editcr8Succ, getFormSucc } from './services/models'
 
 
 
@@ -12,7 +12,7 @@ const editOrCreateInv = createAsyncAction(
     '@@editcr8inv/INV_EDITCR8_REQ',
     '@@editcr8inv/INV_EDITCR8_SUCCESS',
     '@@editcr8inv/INV_EDITCR8_FAILURE'
-)<{invoice?: Invoice, editOrCr8?: string, id?: string}, {invoice?: Invoice}, epicErr>();
+)<editcr8Req, editcr8Succ, epicErr>();
 //type codeTokenFail = ActionType<typeof codeToken.failure>; type codeTokenSucc = ActionType<typeof codeToken.success>;
 
 export const edOrCr8Inv: Epic<RootAction, RootAction, RootState, Services> = (
@@ -22,7 +22,7 @@ action$, state$,
 action$.pipe(
     filter(isActionOf(editOrCreateInv.request)), 
     switchMap( action => 
-        action.payload.editOrCr8=='create'?from( api.invoice.createinv(action.payload.invoice!) ).pipe(
+        action.payload.editOrCr8==='Create'?from( api.invoice.createinv(action.payload.invoice!, action.payload.materials, action.payload.materialsChecked, action.payload.stringtoMats) ).pipe(
             mergeMap(
                 (data: editcr8Succ) => {
                     return of( editOrCreateInv.success(data))
@@ -35,7 +35,7 @@ action$.pipe(
                 } 
             )
         ):
-        from( api.invoice.changelineitems(action.payload.invoice!, action.payload.id!) ).pipe(
+        from( api.invoice.changelineitems(action.payload.invoice!, action.payload.id!, action.payload.materials, action.payload.materialsChecked, action.payload.stringtoMats) ).pipe(
             mergeMap(
                 (data: editcr8Succ) => {
                     return of( editOrCreateInv.success(data))
@@ -91,12 +91,16 @@ const handleCloseErr = createAction('@@editcr8inv/CLOSE_ERR_SNACKBAR',
     } 
 )()
 
+const addNote = createAction('@@editcr8inv/ADD_NOTE',
+    (n: {message?: string}) => ({n})
+)()
+
 
 const getFormItems = createAsyncAction(
     '@@editcr8inv/FORM_ITEMS_REQUEST',
     '@@editcr8inv/FORM_ITEMS_SUCCESS',
     '@@editcr8inv/FORM_ITEMS_FAILURE'
-)<undefined, getFormSucc, epicErr>(); 
+)<{inv?: Invoice, id?: string, edCr8: string}, getFormSucc, epicErr>(); 
 //type founderorfunderFail = ActionType<typeof founderorfunder.failure>; type founderorfunderSuc = ActionType<typeof founderorfunder.success>;
 
 export const formItems: Epic<RootAction, RootAction, RootState, Services> = (
@@ -109,7 +113,9 @@ action$.pipe(
         from(api.invoice.getformitems()).pipe(
             mergeMap(
                 (data: getFormSucc) => {
-                    return of( getFormItems.success({materials: data.materials}) )
+                    let stringtoMats: {[x:string]: any} = {}
+                    data.materials.forEach((m, i) => stringtoMats[m.name!] = i)
+                    return of( getFormItems.success({...data, stringtoMats, invoice: action.payload.inv, id: action.payload.id, edCr8: action.payload.edCr8}) )
                 }
             ),
             catchError(
@@ -130,7 +136,8 @@ const editInvActions = {
     handleChangeSelect,
     handleChangeSingleSel,
     editOrCreateInv,
-    getFormItems
+    getFormItems,
+    addNote
 };
 
 export default editInvActions

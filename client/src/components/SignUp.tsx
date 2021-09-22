@@ -1,6 +1,6 @@
 import React from 'react'
 import { connect, MapStateToProps } from 'react-redux'
-import { CssBaseline, Stepper, Step, StepLabel, Theme, 
+import { CssBaseline, Theme, 
   Typography, withStyles, WithStyles, createStyles } from '@material-ui/core';
 import { Register } from './Register'
 import { RootState } from 'MyTypes'
@@ -9,7 +9,6 @@ import { SignUpState } from '../reducers/SignUpReducer'
 
 //before it was a function that manually said return and the object
 const mapStateToProps: MapStateToProps<SignUpState, {}, RootState> = (state: RootState) => ({
-  activeStep: state.SignUpReducer.activeStep
 });
 
 type StateProps = ReturnType<typeof mapStateToProps>; 
@@ -20,7 +19,7 @@ type Props = StateProps & OwnProps;
 class SignUp extends React.Component<Props, {}> {
 
   render() {
-    const { classes, activeStep } = this.props
+    const { classes } = this.props
     return (
       <div className={classes.root}> {/*was a React.Fragment, switched to div for className*/}
         <CssBaseline />

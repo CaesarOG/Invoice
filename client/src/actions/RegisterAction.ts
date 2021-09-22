@@ -4,7 +4,6 @@ import { switchMap, mergeMap, filter, catchError } from 'rxjs/operators'
 import { from, of } from 'rxjs'
 import {RootAction, RootState, Services } from 'MyTypes'
 import { Res, epicErr, Register, regSucc } from './services/models'
-import { SignUpAction } from './index'
 
 const doReg = createAsyncAction(
     '@@register/REGISTER_REQUEST',
@@ -20,19 +19,23 @@ action$, state$,
 action$.pipe(
     filter(isActionOf(doReg.request)), 
     switchMap( (action: any) => { //i wish I could  any to register.request and destructure action.payload here https://stackoverflow.com/questions/38946387/cast-function-parameter-type-in-typescript
-        let { firstName, lastName, email, password, confirmPassword } = state$.value.RegisterReducer
+        let { firstName, lastName, email, password, confirmPassword, isContr, isCust } = state$.value.RegisterReducer
         if(email === "" || password === "") {
             return of ( doReg.failure({error: 'Email Or Password Was Blank.', errOpen: true}))
         }
         if(password !== confirmPassword) {
             return of ( doReg.failure({error: 'Confirm Password And Password Do Not Match.', errOpen: true}))
         }
-        return from(api.auth.register({firstName, lastName, email, password})).pipe(
+        if(!isContr && !isCust) return of ( doReg.failure({error: 'Must Pick A Role.', errOpen: true}))
+
+        let role: string = isContr? "Contractor":"Customer"
+
+        return from(api.auth.register({firstName, lastName, email, password, role})).pipe(
             mergeMap(
                 (data: Register) => {
                     localStorage.saveItem('user', data.user)
                     localStorage.saveItem('token', data.token)
-                    return of( doReg.success({firstName: "", lastName: "", email: "", password: "", confirmPassword: ""}), SignUpAction.secondActiveStep() )
+                    return of( doReg.success({firstName: "", lastName: "", email: "", password: "", confirmPassword: "", isCust: false, isContr: false}))
                 }
             ),
             catchError(
@@ -52,12 +55,6 @@ const handleChange = createAction('@@register/PROP_CHANGE',
         return { propName: name, propValue: value}
     }
 )()
-
-const handleChangeRadio = createAction('@@founderfunder/RADIO_CHANGE',
-    (e: React.ChangeEvent<{}>, value: string) => {
-        return { angelOrFirm: value }
-    } 
-)();
 
 const handleChangeSwitch = createAction('@@founderfunder/SWITCH_CHANGE',
     (e: React.ChangeEvent<HTMLInputElement>) => {

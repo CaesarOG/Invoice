@@ -45,8 +45,7 @@ func main() {
 		case bytes.HasPrefix(path, apiRoutes):
 			apiRouter.Handler(ctx)
 		default:
-			/*			fmt.Println("Any other request is either ' / ' or a react router link, can just serve index.html.")
-						fmt.Println("And there, react router should check for token in local storage otherwise go to login page.")*/
+
 			Index(ctx)
 		}
 	}
@@ -57,6 +56,8 @@ func main() {
 	apiRouter.GET("/api/invc/getmany/:ID", routes.GetManyInvoices)
 	apiRouter.POST("/api/invc/change/:ID", routes.ChangeLineItems)
 	apiRouter.GET("/api/invc/getformitems", routes.GetFormItems)
+	apiRouter.POST("/api/invc/create", routes.CreateInvoice)
+	apiRouter.GET("/api/invc/get/:ID", routes.GetInvoice)
 
 	defer models.GetDB().Close()
 

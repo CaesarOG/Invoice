@@ -5,8 +5,8 @@ import rootReducer from './root-reducer'
 import rootEpic from './root-epic'
 //import rootAction from './root-action'
 import { reginitialState, sigIinitialState, 
-  sigUinitialState, widgInitialState, hDinitialState, sBinitialState, slInitialState,
-  invHinitialState, cmpyDetInitialState, appInitialState, pwInitialState, editInvinitialState } from '../reducers'
+  sigUinitialState, widgInitialState, hDinitialState, sBinitialState,
+  invHinitialState, invcDetInitialState, appInitialState, editInvinitialState } from '../reducers'
 import { createEpicMiddleware } from 'redux-observable'
 import services from '../actions/services';
 
@@ -32,10 +32,9 @@ const initialState: RootState = {
   WidgetReducer: widgInitialState,
   HeaderReducer: hDinitialState,
   SideBarReducer: sBinitialState,
-  SliderReducer: slInitialState,
   InvoicesHomeReducer: invHinitialState,
   AppReducer: appInitialState,
-  PayWallReducer: pwInitialState
+  InvoiceDetReducer: invcDetInitialState
 }
 
 // const initialState = {

@@ -18,7 +18,7 @@ import (
 )
 
 //AbsPath of code.
-const AbsPath string = "/Users/neeraj/Projects/sxc/" // "/home/ubuntu/staging/"
+const AbsPath string = "/Users/neeraj/Projects/frontend-homework/" // "/home/ubuntu/staging/"
 
 //ServerEnv "$HOME/Projects/sxc/server/.env" .
 const ServerEnv string = AbsPath + "server/.env"
@@ -43,7 +43,7 @@ func init() {
 		fmt.Print(err)
 	}
 	db.SingularTable(true)
-	db.LogMode(true)
+	//db.LogMode(true)
 	db.DB().SetConnMaxLifetime(10 * time.Second)
 	db.DB().SetMaxIdleConns(30)
 
@@ -115,13 +115,14 @@ func Start(db *gorm.DB) error {
 		{
 			ID: "database",
 			Migrate: func(tx *gorm.DB) error {
-				tx.DropTableIfExists(&Material{}, &Invoice{}, &Note{})
+				tx.DropTableIfExists(&Material{}, &Invoice{}, &Note{}, &User{})
 				pretty.Println("TRYING")
 				//errC := nil
-				errC := tx.CreateTable(&Material{}, &Invoice{}, &Note{}).Error
+				errC := tx.CreateTable(&Material{}, &Invoice{}, &Note{}, &User{}).Error
 				if errC == nil {
 					tx.Model(&Material{}).AddForeignKey("invoice_id", "invoices(id)", "RESTRICT", "RESTRICT")
 					tx.Model(&Note{}).AddForeignKey("invoice_id", "invoices(id)", "RESTRICT", "RESTRICT")
+					tx.Model(&Invoice{}).AddForeignKey("user_id", "users(id)", "RESTRICT", "RESTRICT")
 					pretty.Println("CREATION AND KEYS SHOULD HAVE WORKED.")
 					InvoicesFromCSV()
 				}
@@ -137,12 +138,19 @@ func Start(db *gorm.DB) error {
 }
 
 func InvoicesFromCSV() {
-	pathInvoices := AbsPath + "server/models/states.csv"
+	pathInvoices := AbsPath + "server/models/invoices.csv"
 	invoiceCsv, err := os.Open(pathInvoices)
 	if err != nil {
 		pretty.Println(err.Error())
 		return
 	}
+
+	pathMaterials := AbsPath + "server/models/materials.csv"
+	materialsCsv, _ := os.Open(pathMaterials)
+	matIdx := rand.Intn(6)
+	linesMat, _ := csv.NewReader(materialsCsv).ReadAll()
+
+	linesInvoice, _ := csv.NewReader(invoiceCsv).ReadAll()
 
 	pathNotes := AbsPath + "server/models/notes.csv"
 	notesCsv, _ := os.Open(pathNotes)
@@ -150,18 +158,22 @@ func InvoicesFromCSV() {
 	noteMatIdx, noteHrIdx := rand.Intn(5), rand.Intn(4)+6
 	notesStr := []string{linesNotes[noteMatIdx][0], linesNotes[5][0], linesNotes[noteHrIdx][0]}
 
-	pathMaterials := AbsPath + "server/models/materials.csv"
-	materialsCsv, _ := os.Open(pathMaterials)
-	matIdx := []int{rand.Intn(8), rand.Intn(8), rand.Intn(8)}
-	linesMat, _ := csv.NewReader(materialsCsv).ReadAll()
-
-	linesInvoice, _ := csv.NewReader(invoiceCsv).ReadAll()
 	var daysAdd, choice int
 	choice = rand.Intn(2)
 	if choice == 0 {
 		daysAdd = -1
 	} else {
 		daysAdd = 1
+	}
+	neeraj, rajiv := &User{}, &User{}
+	neeraj.Email, rajiv.Email = "neerajram108@gmail.com", "rajivprabhakar@gmail.com"
+	db.Create(neeraj)
+	db.Create(rajiv)
+	db.Model(&User{}).Where("email = ?", `neerajram108@gmail.com`).Find(neeraj)
+	db.Model(&User{}).Where("email = ?", `rajivprabhakar@gmail.com`).Find(rajiv)
+	for _, line := range linesMat {
+		mat := &Material{Name: line[0]}
+		db.Create(mat)
 	}
 
 	for _, line := range linesInvoice {
@@ -179,13 +191,15 @@ func InvoicesFromCSV() {
 			status = []string{"Paid", "Outstanding"}[rand.Intn(2)]
 		}
 		invoice := &Invoice{Name: line[0], CustEmail: line[1], ContrEmail: line[2], Description: line[3], BillableHours: bHrs,
-			WageRate: wR, SupplyCost: suppCost, Status: status, DueDate: due,
+			WageRate: wR, SupplyCost: suppCost, Status: status, DueDate: due, CustID: neeraj.ID, ContrID: rajiv.ID,
 		}
+
 		db.Create(invoice)
-		notes := []Note{Note{Message: notesStr[0]}, {Message: notesStr[1]}, {Message: notesStr[2]}}
-		materials := []Material{Material{Name: linesMat[matIdx[0]][0]}, {Name: linesMat[matIdx[1]][0]}, {Name: linesMat[matIdx[2]][0]}}
-		db.Table("invoices").First(invoice).Association("Materials").Append(materials)
-		db.Table("invoices").First(invoice).Association("Notes").Append(notes)
+		notes := &[]Note{Note{Message: notesStr[0]}, {Message: notesStr[1]}, {Message: notesStr[2]}}
+		materials := []Material{}
+		db.Table("material").Where("name = ? OR name = ? OR name = ?", linesMat[matIdx][0], linesMat[matIdx+1][0], linesMat[matIdx+2][0]).Find(&materials)
+		db.Table("invoice").First(invoice).Association("Notes").Append(notes)
+		db.Table("invoice").First(invoice).Association("Materials").Append(materials)
 		db.Save(invoice)
 
 	}

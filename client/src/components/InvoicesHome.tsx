@@ -2,16 +2,10 @@ import React from 'react'
 import { connect, MapStateToProps } from 'react-redux' //MapDispatchToProps
 import { ActionType } from 'typesafe-actions'
 import { RootState } from 'MyTypes'
-import { Slide, Card, CardActionArea, CardActions, Theme, CardContent, CardMedia, 
-  Snackbar, withStyles, Button, Grid, MenuItem, createStyles, WithStyles, Dialog, InputLabel,
-  DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl,
-  Select, OutlinedInput } from '@material-ui/core';
-import MySnackbarContent from './MySnackbarContent'
+import { Theme, withStyles, Grid, createStyles, WithStyles} from '@material-ui/core';
 import { InvoicesHomeAction } from '../actions' 
-import { Typography} from './WidgetAndWrappers'
 import { InvoicesHomeState } from '../reducers/InvoicesHomeReducer'
 import services from '../actions/services'
-import { Dot } from '.'
 import { User, obj } from '../actions/services/models';
 import { RouteComponentProps } from 'react-router';
 import MUIDataTable from 'mui-datatables'
@@ -26,10 +20,11 @@ const mapStateToProps: MapStateToProps<InvoicesHomeState, {}, RootState> = (stat
 type InvoicesHomeAction = ActionType<typeof InvoicesHomeAction>;
 //Map Redux Actions to component props
 const mapDispatchToProps = {
-  handleChangeSelect: InvoicesHomeAction.handleChangeSelect,
-  handleCloseMsg: InvoicesHomeAction.handleCloseMsg,
-  handleCloseErr: InvoicesHomeAction.handleCloseErr,
-  getManyInvs: InvoicesHomeAction.getManyInvoices.request
+  invclickRow: InvoicesHomeAction.invClickRow,
+  invcChangeRowsPerPage: InvoicesHomeAction.getManyInvoices.request,
+  invcSearchChange: InvoicesHomeAction.getManyInvoices.request,
+  invcChangePage: InvoicesHomeAction.getManyInvoices.request,
+  updSearchTxt: InvoicesHomeAction.updSearchTxt
 }
 type StateProps = ReturnType<typeof mapStateToProps>; 
 type DispatchProps = typeof mapDispatchToProps;
@@ -38,33 +33,35 @@ type Props = StateProps & DispatchProps & OwnProps
 
 class InvoicesHome extends React.Component<Props, {}> {
 
-  componentDidMount() {//https://tylermcginnis.com/react-router-query-strings/
-    this.props.getManyInvs({query: '', offset: 0, limit: this.props.limit, place: 'sClose'}, this.props.user)
+  componentDidMount() {//https://tylermcginnis.com/react-router-query-strings/m
+    let user = (this.props.location.state! as obj) && ((this.props.location.state! as obj).user)?(this.props.location.state! as obj).user:services.localStorage.loadItem<User>("user")
+    this.props.invcSearchChange({query: '', offset: 0, limit: this.props.limit, place: 'sClose', user: user})
   }
 
 
   render() {
-    const { handleCloseMsg, handleCloseErr, classes, error, message, errOpen, msgOpen, theme, handleChangeSelect } = this.props
+    const { classes, list, count, currentPage, searchText, limit,
+    updSearchTxt, invcSearchChange, invcChangePage, invcChangeRowsPerPage, invclickRow, user } = this.props
 
     return ( 
       <div className={classes.root}>
         <React.Fragment>
         <Grid container spacing={5}>
           <Grid item xs={12}>
-            <MUIDataTable title="All Founders" data={list} columns={[ {name: 'ID', options: {display: "excluded"}}, {name: "user.lastName", label: "Name"}, 
-              {name: "email", label: "Email"}, {name: "phone", label: "Phone"}, {name: "cmpyPrinc", label: "Principal For"} ]}
+            <MUIDataTable title="All Invoices" data={list} columns={[ {name: 'ID', options: {display: "excluded"}}, {name: "description", label: "Description"}, 
+              {name: "custEmail", label: "Cust. Email"}, {name: "contrEmail", label: 'Contr. Email'} ]}
               options={{ 
                 page: currentPage,
                 count: count,
                 serverSide: true,
                 searchText,
                 selectableRows: 'none',
-                filterType: "dropdown" as any, responsive: 'scroll' as any, download: false, print: false, onRowClick: founclickRow,
-                onSearchChange: (query: string|null) => { updSearchTxt(query!); founSearchChange({query: query!, offset: 0, limit, place: "search"}) },
+                filterType: "dropdown" as any, responsive: 'scroll' as any, download: false, print: false, onRowClick: (rowData, rowMeta) => { invclickRow(rowData, rowMeta, user) },
+                onSearchChange: (query: string|null) => { updSearchTxt(query!); invcSearchChange({query: query!, offset: 0, limit, place: "search", user }) },
                 onChangePage: (currentmeaningjustnew: number) => currentmeaningjustnew < currentPage ? undefined : 
-                founChangePage({offset: currentmeaningjustnew*limit, limit, place: "page"}), /*onchangepage delivers current as the just changed to page*/
-                onChangeRowsPerPage: (numRows: number) => founChangeRowsPerPage({offset: (currentPage-1)*limit, limit: numRows, place: "rows"}), 
-                onSearchClose: () => founSearchChange({query: '', offset: 0, limit, place: "sClose"}) /*if query empty or if search close and then so query empty, reg pagin */
+                invcChangePage({offset: currentmeaningjustnew*limit, limit, place: "page", user: user}), /*onchangepage delivers current as the just changed to page*/
+                onChangeRowsPerPage: (numRows: number) => invcChangeRowsPerPage({offset: (currentPage-1)*limit, limit: numRows, place: "rows", user}), 
+                onSearchClose: () => invcSearchChange({query: '', offset: 0, limit, place: "sClose", user}) /*if query empty or if search close and then so query empty, reg pagin */
               }} 
             />
           </Grid>
@@ -74,18 +71,6 @@ class InvoicesHome extends React.Component<Props, {}> {
     );
   }
 }
-
-function TransitionRight(props: any) {
-  return <Slide {...props} direction="right" />;
-}
-
-function getStyles(elt: {[x:string]:any}, array: Array<{[x:string]:any}>, that: InvoicesHome) {
-  return { fontWeight: array.indexOf(elt) === -1 ? that.props.theme.typography.fontWeightRegular : that.props.theme.typography.fontWeightMedium }
-}
-
-const ITEM_HEIGHT = 48;
-const ITEM_PADDING_TOP = 8;
-const MenuProps = {   PaperProps: {  style: { maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP, width: 250 }  }   };
 
 const styles = (theme: Theme) => createStyles({
   root: {

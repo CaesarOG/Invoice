@@ -78,7 +78,7 @@ func JWT(next fasthttp.RequestHandler) fasthttp.RequestHandler {
 		}
 
 		user := &models.User{}
-		errU := models.GetDB().Table("users").Where("id = ?", tk.UserID).First(user).Error
+		errU := models.GetDB().Table("user").Where("id = ?", tk.UserID).First(user).Error
 		if errU != nil {
 			if errU == gorm.ErrRecordNotFound {
 				ResponseMaker(ctx, fasthttp.StatusUnauthorized, false, "User Not Found.", "noData")

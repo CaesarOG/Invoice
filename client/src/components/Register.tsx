@@ -3,7 +3,7 @@ import { connect, MapStateToProps } from 'react-redux' //MapDispatchToProps
 import { ActionType } from 'typesafe-actions'
 import { RootState } from 'MyTypes'
 import { Avatar, Paper, Slide, Snackbar, Typography, withStyles, 
-  WithStyles, createStyles, Button, TextField, Theme } from '@material-ui/core';
+  WithStyles, createStyles, Button, TextField, Theme, Grid, FormControl, FormGroup, FormControlLabel, Switch } from '@material-ui/core';
 import { LockOutlined } from '@material-ui/icons';
 import { RegisterAction } from '../actions'
 import { createPropsGetter } from '../actions/services/models';
@@ -19,6 +19,8 @@ const mapStateToProps: MapStateToProps<RegisterState, {}, RootState> = (state: R
   confirmPassword: state.RegisterReducer.confirmPassword,
   error: state.RegisterReducer.error,
   errOpen: state.RegisterReducer.errOpen,
+  isCust: state.RegisterReducer.isCust,
+  isContr: state.RegisterReducer.isContr
 });
 
 type RegisterAction = ActionType<typeof RegisterAction>;
@@ -27,7 +29,8 @@ const mapDispatchToProps = {
   doRegReq: RegisterAction.doReg.request,
   handleChange: RegisterAction.handleChange,
   handleCloseErr: RegisterAction.handleCloseErr,
-  backSignIn: RegisterAction.backSignIn
+  backSignIn: RegisterAction.backSignIn,
+  handleChangeSwitch: RegisterAction.handleChangeSwitch
 }
 
 const styles = (theme: Theme) => createStyles({
@@ -62,6 +65,9 @@ const styles = (theme: Theme) => createStyles({
     margin: theme.spacing(1),
     backgroundColor: theme.palette.secondary.main,
   },
+  formControl: {
+    margin: theme.spacing(3),
+  },
   textField: {
     marginLeft: theme.spacing(4),
     marginRight: theme.spacing(4),
@@ -83,7 +89,8 @@ const getProps = createPropsGetter(Object.assign({}, reginitialState, mapDispatc
 class Register extends React.Component<Props, {}> {
 
   render() {
-    const { classes, firstName, lastName, email, password, confirmPassword, error, errOpen, handleChange, doRegReq, backSignIn, handleCloseErr } = getProps(this.props)
+    const { classes, firstName, lastName, email, password, confirmPassword, error, errOpen, handleChange, doRegReq, 
+      backSignIn, handleCloseErr, handleChangeSwitch, isCust, isContr } = getProps(this.props)
     return (
       <React.Fragment>
         <main className={classes.layout}>
@@ -118,14 +125,14 @@ class Register extends React.Component<Props, {}> {
                 <FormControl component={"fieldset" as "div"} className={classes.formControl}>   {/* fieldset https://github.com/mui-org/material-ui/issues/13744*/}
                   <FormGroup row>
                     <FormControlLabel control={ 
-                      <Switch id="founderBool" checked={founderBool} value={founderBool} onChange={handleChangeSwitch} disabled={funderBool}/>
+                      <Switch id="isCust" checked={isCust} value={isCust} onChange={handleChangeSwitch} disabled={isContr}/>
                       } 
-                      label="Founder"
+                      label="Customer"
                     />
                     <FormControlLabel control={
-                      <Switch id="funderBool" checked={funderBool} value={funderBool} onChange={handleChangeSwitch} disabled={founderBool}/>
+                      <Switch id="isContr" checked={isContr} value={isContr} onChange={handleChangeSwitch} disabled={isCust}/>
                       }
-                      label="Funder"
+                      label="Contractor"
                     />
                   </FormGroup>
                 </FormControl>

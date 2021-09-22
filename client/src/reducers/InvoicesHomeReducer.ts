@@ -1,8 +1,7 @@
 import { ActionType, getType } from 'typesafe-actions'
 import { InvoicesHomeAction } from '../actions'
 import { Reducer }  from 'redux'
-import { Invoice } from '../actions/services/models';
-import services from '../actions/services'
+import { Invoice, User } from '../actions/services/models';
 import { history } from '../App'
 
 export interface InvoicesHomeState {
@@ -14,10 +13,11 @@ export interface InvoicesHomeState {
     searchText: string
     error: string
     errOpen: boolean
+    user: User
 }
 
 export const invHinitialState: InvoicesHomeState = {
-    currentPage: 1, limit: 30, place: 'page', count: 1, list: [], searchText: '', error: "", errOpen: false
+    currentPage: 1, limit: 30, place: 'page', count: 1, list: [], searchText: '', error: "", errOpen: false, user: new User()
 }
 
 type InvoicesHomeAction = ActionType<typeof InvoicesHomeAction>;
@@ -28,23 +28,19 @@ const invHReducer: Reducer<InvoicesHomeState, InvoicesHomeAction> = (state: Invo
 
         case getType(InvoicesHomeAction.getManyInvoices.failure):
             return {
-                ...state, 
-            }
-
-        case getType(InvoicesHomeAction.getManyInvoices.failure):
-            return {
                 ...state, error: action.payload.error, errOpen: action.payload.errOpen
             }
         
         case getType(InvoicesHomeAction.invClickRow):
-        history.push(`/detail/${action.payload.rowData[0]}`)
-        return state
+            let inv: Invoice = state.list[action.payload.rowMeta.dataIndex]
+            history.push(`/detail/${action.payload.rowData[0]}`, {inv, user: action.payload.user})
+            return state
 
         case getType(InvoicesHomeAction.getManyInvoices.success):
             let {offset, count, limit, place} = action.payload.pagination
             if(place === "page") {
                 return {
-                    ...state, list: state.list.concat(action.payload.invoices), limit, place, count: count!, currentPage: offset/limit
+                    ...state, list: state.list.concat(action.payload.invoices), limit, place, count: count!, currentPage: offset/limit, user: action.payload.user
                 }
             }
             else if(place === "rows" || place === "sClose") {

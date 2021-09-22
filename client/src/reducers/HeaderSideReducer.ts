@@ -16,12 +16,13 @@ export interface HeaderState {
     error: string
     errOpen: boolean
     notifications?: Notification[]
+    dues: boolean
 }
 
 export const hDinitialState: HeaderState = {
     isSearchOpen: false, isMailsUnread: false, isNotificationsUnread: false, notificationsMenu: null, 
     profileMenu: null, signedIn: false, user: new User(),
-    ntfnModalOpen: {"FundNtfn": false, "CmpyReturn": false}, error: "", errOpen: false,
+    ntfnModalOpen: {"FundNtfn": false, "CmpyReturn": false}, error: "", errOpen: false, dues: false
 }
 
 type HeaderAction = ActionType<typeof HeaderAction>;
@@ -38,31 +39,28 @@ const hDReducer: Reducer<HeaderState, HeaderAction> = (state: HeaderState = hDin
             return {
                 ...state, signedIn: action.payload.signedIn
             }
-
-        case getType(HeaderAction.setSignedIn):
-            if(action.payload.signedIn) {
-                return {
-                    ...state, signedIn: action.payload.signedIn, user: action.payload.user
-                }
-            } else {
-                return {
-                    ...state, signedIn: action.payload.signedIn
-                }
+            
+        case getType(HeaderAction.setUserSigned):
+            return {
+                ...state, signedIn: action.payload.signedIn, notifications: action.payload.notifs,
+                    user: action.payload.user
             }
 
-        case getType(HeaderAction.openNotificationsMenu):
+        case getType(HeaderAction.goInvoice):
+            history.push(`/detail/${action.payload.notif.ID}`)
+            return {
+                ...state
+            }
+        
+        case getType(HeaderAction.openNotifsMenu):
             return {
                 ...state, notificationsMenu: action.payload.notificationsMenu, isNotificationsUnread: action.payload.isNotificationsUnread
             }
-
+        
         case getType(HeaderAction.closeNotificationsMenu):
             return {
                 ...state, notificationsMenu: action.payload.notificationsMenu
             }
-        //     setTimeout(() => { history.push('/notifications', {...(action.payload)}) }, 100)
-        //     return state
-
-        //     history.push(`/ntfn/${action.payload.cmpyID}`)
 
         case getType(HeaderAction.openProfileMenu):
             return {
@@ -81,7 +79,7 @@ const hDReducer: Reducer<HeaderState, HeaderAction> = (state: HeaderState = hDin
 
         case getType(HeaderAction.closeDialog):
             return {
-                ...state, ntfnModalOpen: {...state.ntfnModalOpen, [action.payload.ntfnType]: false }
+                ...state
             }
 
         default: 

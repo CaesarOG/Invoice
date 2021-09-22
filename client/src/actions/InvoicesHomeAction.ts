@@ -1,10 +1,9 @@
 import { createAction, createAsyncAction, isActionOf } from 'typesafe-actions'
 import { Epic } from 'redux-observable'
-import { switchMap, mergeMap, filter, catchError } from 'rxjs/operators'
-import { from, of } from 'rxjs'
+import { switchMap, mergeMap, filter, catchError, debounce } from 'rxjs/operators'
+import { from, of, interval } from 'rxjs'
 import {RootAction, RootState, Services } from 'MyTypes'
-import { Res, epicErr, invListReq, invListSucc } from './services/models'
-import services from '../actions/services'
+import { Res, epicErr, invListReq, invListSucc, User } from './services/models'
 
 
 
@@ -12,7 +11,7 @@ const getManyInvoices = createAsyncAction(
     '@@invoiceslist/INVS_GETMANY_REQUEST',
     '@@invoiceslist/INVS_GETMANY_SUCCESS',
     '@@invoiceslist/INVS_GETMANY_FAILURE'
-)<invListReq, invListSucc, epicErr>();
+)<invListReq & {user: User}, invListSucc & {user: User}, epicErr>();
 //type codeTokenFail = ActionType<typeof codeToken.failure>; type codeTokenSucc = ActionType<typeof codeToken.success>;
 
 export const invList: Epic<RootAction, RootAction, RootState, Services> = (
@@ -21,12 +20,13 @@ action$, state$,
 ) => 
 action$.pipe(
     filter(isActionOf(getManyInvoices.request)), 
+    debounce(()=> interval(1000)),
     switchMap( action => 
-        from(api.invoice.getmanyinvs(action.payload, state$.value.InvoicesHomeReducer.currentPage)).pipe(
+        from(api.invoice.getmanyinvs(action.payload, state$.value.InvoicesHomeReducer.currentPage, action.payload.user)).pipe(
             mergeMap( /*<BuildOauth, Observable<sourceUrlSucc>>*/
                 (data: invListSucc) => {
                     logger.log(data.pagination);
-                    return of( getManyInvoices.success(data))
+                    return of( getManyInvoices.success({...data, user: action.payload.user}))
                 }
             ),
             catchError( /*<sXcRes, Observable<sourceUrlFail>>*/
@@ -41,8 +41,8 @@ action$.pipe(
 
 
 const invClickRow = createAction('@@founderslist/CLICK_FOUND',
-    (rowData: string[], rowMeta: { dataIndex: number; rowIndex: number }) => (
-        {rowData}
+    (rowData: string[], rowMeta: { dataIndex: number; rowIndex: number }, user) => (
+        {rowData, rowMeta, user}
     )
 )()
 
@@ -51,14 +51,6 @@ const updSearchTxt = createAction('@@masterlists/SEARCH_CHANGE',
     (searchText: string) => (
         {searchText}
     )
-)()
-
-
-const handleChangeSelect = createAction('@@companyntfn/SELECT_CHANGE',
-    (e: React.ChangeEvent<{ name?: string | undefined; value: unknown; }>) => {
-        const {name, value} = e.target //might need checked instead of value
-        return { selectName: name as string, selectValue: value as string }
-    }
 )()
 
 

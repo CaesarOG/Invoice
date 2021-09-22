@@ -1,5 +1,5 @@
 import React from 'react';    import { connect, MapStateToProps } from 'react-redux'
-import { createPropsGetter, FrgnField } from '../actions/services/models';    import { ActionType } from 'typesafe-actions';     import { RootState } from 'MyTypes'
+import { createPropsGetter, User } from '../actions/services/models';    import { ActionType } from 'typesafe-actions';     import { RootState } from 'MyTypes'
 import { AppBar, Toolbar, IconButton, InputBase, Menu, MenuItem, ListItem,
   withStyles, WithStyles, Theme, createStyles, Divider, ListItemIcon, ListItemText, Drawer, List, Omit, Dialog, DialogTitle, DialogContent, DialogActions,
   DialogContentText, Button, Snackbar, Slide } from '@material-ui/core'
@@ -7,7 +7,7 @@ import MySnackbarContent from './MySnackbarContent'
 import { Menu as MenuI, Person as AccountIcon, Search as SearchIcon, ArrowBack, ThumbUp as ThumbUpIcon,
   ShoppingCart as ShoppingCartIcon, LocalOffer as TicketIcon, BusinessCenter as DeliveredIcon,
   SmsFailed as FeedbackIcon, DiscFull as DiscIcon, Email as MessageIcon, Report as ReportIcon,
-  Error as DefenceIcon, AccountBox as CustomerIcon, Done as ShippedIcon, Publish as UploadIcon
+  Error as DefenceIcon, AccountBox as CustomerIcon, Done as ShippedIcon, Publish as UploadIcon, NotificationImportant
 } from '@material-ui/icons';    import { Link, LinkProps } from 'react-router-dom'; import services from '../actions/services'; import * as H from 'history';
 import { fade } from '@material-ui/core/styles/colorManipulator';    import { Typography } from './WidgetAndWrappers'
 import classnames from 'classnames';    import tinycolor from 'tinycolor2';    import { Variant } from '@material-ui/core/styles/createTypography';
@@ -211,23 +211,25 @@ const mapStateToPropsH: MapStateToProps<HeaderState, {}, RootState> = (state: Ro
   ntfnModalOpen: state.HeaderReducer.ntfnModalOpen,
   error: state.HeaderReducer.error,
   errOpen: state.HeaderReducer.errOpen,
-  notifications: state.HeaderReducer.notifications
+  notifications: state.HeaderReducer.notifications,
+  dues: state.HeaderReducer.dues
 })
 
 type HeaderAction = ActionType<typeof HeaderAction>;
 
 const mapDispatchToPropsH = {
-  openNotificationsMenu: HeaderAction.openNotificationsMenu,
+  openNotifsMenu: HeaderAction.openNotifsMenu,
   closeNotificationsMenu: HeaderAction.closeNotificationsMenu,
   openProfileMenu: HeaderAction.openProfileMenu,
   closeProfileMenu: HeaderAction.closeProfileMenu,
   toggleSearch: HeaderAction.toggleSearch,
   logout: HeaderAction.logout,
-  setSignedIn: HeaderAction.setSignedIn,
+  setUserSigned: HeaderAction.setUserSigned,
   handleChangeSingleSel: HeaderAction.handleChangeSingleSel,
   goHome: HeaderAction.goHome,
   closeDialog: HeaderAction.closeDialog,
-  handleCloseErr: HeaderAction.handleCloseErr
+  handleCloseErr: HeaderAction.handleCloseErr,
+  goInvoiceNtfn: HeaderAction.goInvoice
 }
 
 type StatePropsH = ReturnType<typeof mapStateToPropsH>
@@ -236,27 +238,19 @@ type OwnPropsH = { theme: Theme, isSidebarOpened: boolean, toggleSidebar: (event
 type PropsH = Partial<StatePropsH & DispatchPropsH & OwnPropsH> & WithStyles<typeof hdStyles>;
 const getPropsH = createPropsGetter(Object.assign({}, hDinitialState, mapDispatchToPropsH))
 
-const ITEM_HEIGHT = 48;
-const ITEM_PADDING_TOP = 8;
-const MenuProps = {
-  PaperProps: {
-    style: {
-      maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
-      width: 250,
-    },
-  },
-};
-
 class Header extends React.Component<PropsH, {}> {
   componentDidMount() {
-    this.props.setSignedIn!()
+    let user: User = services.localStorage.loadItem<User>("user")
+    if (user && user.firstName && user.firstName !== "") {
+      this.props.setUserSigned!(user)
+    }
   }
 
   render() { //openProfileMenu
-    const { isSidebarOpened, isSearchOpen, isNotificationsUnread, notificationsMenu, toggleSidebar, signedIn, user,
-      openProfileMenu, logout, classes, toggleSearch, openNotificationsMenu, closeNotificationsMenu,
-      profileMenu, goHome, ntfnModalOpen, closeDialog, closeProfileMenu, handleChangeSingleSel,
-      error, errOpen, handleCloseErr, notifications } = getPropsH(this.props)
+    const { isSidebarOpened, isSearchOpen, notificationsMenu, toggleSidebar, signedIn, user,
+      openProfileMenu, logout, classes, toggleSearch, openNotifsMenu, closeNotificationsMenu,
+      profileMenu, goHome, closeDialog, closeProfileMenu,
+      error, errOpen, handleCloseErr, notifications, goInvoiceNtfn, dues } = getPropsH(this.props)
     return (
       <React.Fragment>
       <AppBar position="fixed" className={classes.appBar}>
@@ -293,18 +287,23 @@ class Header extends React.Component<PropsH, {}> {
             <AccountIcon classes={{ root: classes.headerIcon }} />
           </IconButton>
           {signedIn && <React.Fragment>
+
+          <IconButton color="inherit" aria-haspopup="true" aria-controls="notifications-menu"
+            onClick={openNotifsMenu} className={classes.headerMenuButton} disabled={!signedIn}
+          >
+            <NotificationImportant classes={{ root: classes.headerIcon }} />
+          </IconButton>
           <Menu id="notifications-menu" open={Boolean(notificationsMenu)} anchorEl={notificationsMenu}
-            onClose={closeNotificationsMenu} className={classes.headerMenu} disableAutoFocusItem
-          >
-              {notifications}
-              <MenuItem key={notification.message+"r"} onClick={(e) => {goInvoiceNtfn(e, notification)}} className={classes.headerMenuItem}
-              >
-                <Notification {...notification} typographyVariant="caption" />
-              </MenuItem>
+            onClose={closeNotificationsMenu} className={classes.headerMenu} disableAutoFocusItem >
+              {notifications!.map(notification =>
+                <MenuItem key={notification.message+"r"} onClick={(e) => {goInvoiceNtfn(e, notification)}} className={classes.headerMenuItem} >
+                  <Notification {...notification} typographyVariant="caption" />
+                </MenuItem>
+              )}
           </Menu>
+
           <Menu id="profile-menu" open={Boolean(profileMenu)} anchorEl={profileMenu} onClose={closeProfileMenu}
-            className={classes.headerMenu} classes={{ paper: classes.profileMenu }} disableAutoFocus
-          >
+            className={classes.headerMenu} classes={{ paper: classes.profileMenu }} disableAutoFocus >
             <div className={classes.profileMenuUser} >
               <UserAvatar name={user.firstName + " " + user.lastName} color="primary"></UserAvatar>
               <Typography variant="h4" weight="medium"> {user.firstName + " " + user.lastName} </Typography>
@@ -324,19 +323,15 @@ class Header extends React.Component<PropsH, {}> {
           </React.Fragment>}
         </Toolbar>
       </AppBar>
-      <Dialog open={ntfnModalOpen['CmpyReturn']}>
-        <DialogTitle id="form-dialog-title">Return Confirmation from Founder</DialogTitle>
+      <Dialog open={dues}>
+        <DialogTitle id="form-dialog-title">Overdue Invoices</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            The company {activeNtfn.cmpyName!} has accepted your notification of interest and de-anonymized, click View Full 
-            below to see the complete listing. No credits are required for company de-anonymization confirmations.
+            You have {notifications?.length} overdue invoices.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={ (e) => { closeDialog(e, 'CmpyReturn') }} color="primary">Cancel</Button>
-          <Button onClick={ () => { fundFollowCmpyReturn(activeNtfn.companyID, funder) }} color="primary">
-            View Full
-          </Button>
+          <Button onClick={ (e) => { closeDialog(e) }} color="primary">OK</Button>
           <Button onClick={undefined} color="primary">Later</Button>
           </DialogActions>
       </Dialog>
@@ -538,28 +533,6 @@ const hdStyles = (theme: Theme) => createStyles({
 
 });
 
-const CARD_ELEMENT_OPTIONS = {
-  style: {
-    base: {
-      color: "#32325d",
-      fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
-      fontSmoothing: "antialiased",
-      fontSize: "16px",
-      "::placeholder": {
-        color: "#aab7c4",
-      },
-    },
-    invalid: {
-      color: "#fa755a",
-      iconColor: "#fa755a",
-    },
-  },
-};
-
-function getStyles(elt: FrgnField, array: Array<FrgnField>, that: Header) {
-  return { fontWeight: array.indexOf(elt) === -1 ? that.props.theme!.typography.fontWeightRegular : that.props.theme!.typography.fontWeightMedium }
-}
-
 function TransitionRight(props: any) {
   return <Slide {...props} direction="right" />;
 }
@@ -676,7 +649,7 @@ const SbLn: React.FC<lnProps> = ({ label, classes, type, isSidebarOpened, color,
   const RenderLink = React.useMemo(
     () =>
       React.forwardRef<any, Omit<LinkProps, 'to'>>((itemProps, ref) => (
-        <Link to={(loc)=>{return toMaker(to!, loc)}} ref={ref} {...itemProps} />
+        <Link to={(loc) => {return toMaker(to!, loc)}} ref={ref} {...itemProps} />
       )),
     [to],
   ); // CRAZY!! https://dev.to/ranewallin/js-bites-react-hook-is-called-in-a-function-which-is-neither-a-react-function-or-sic-a-custom-react-hook-1g2c

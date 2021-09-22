@@ -76,12 +76,12 @@ func GetManyInvoices(ctx *fasthttp.RequestCtx) {
 				filteredInvcs = models.GetDB().Model(&models.Invoice{}).
 					Joins(`JOIN invoice_materials on invoices.id = invoice_materials.invoice_id JOIN materials on materials.id = invoice_materials.material_id 
 				JOIN notes on notes.invoice_id = invoices.id`).
-					Where(`invoices.`+idStr+`_id = ? AND (invoices.name ILIKE ? OR invoices.description ILIKE ? OR materials.name ILIKE ? OR notes.message ILIKE ?) AND invoices.status = ?`, UserID, query, query, query, query, "Late")
+					Where(`invoices.`+idStr+`_id = ? AND (invoices.name ILIKE ? OR invoices.description ILIKE ? OR invoices.cust_email ILIKE ? OR invoices.contr_email ILIKE ? OR materials.name ILIKE ? OR notes.message ILIKE ?) AND invoices.status = ?`, UserID, query, query, query, query, query, query, "Late")
 			} else {
 				filteredInvcs = models.GetDB().Model(&models.Invoice{}).
 					Joins(`JOIN invoice_materials on invoices.id = invoice_materials.invoice_id JOIN materials on materials.id = invoice_materials.material_id 
 				JOIN notes on notes.invoice_id = invoices.id`).
-					Where(`invoices.`+idStr+`_id = ? AND (invoices.name ILIKE ? OR invoices.description ILIKE ? OR materials.name ILIKE ? OR notes.message ILIKE ?)`, UserID, query, query, query, query)
+					Where(`invoices.`+idStr+`_id = ? AND (invoices.name ILIKE ? OR invoices.description ILIKE ? OR invoices.cust_email ILIKE ? OR invoices.contr_email ILIKE ? OR materials.name ILIKE ? OR notes.message ILIKE ?)`, UserID, query, query, query, query, query, query)
 			}
 			filteredInvcs.Count(&count) //from https://github.com/jinzhu/gorm/issues/1007; count doesn't work in same line as limit & offset
 			err = filteredInvcs.Limit(limit).Offset(offset).Preload("Notes").Preload("Materials").Find(&invcs).Error
@@ -147,7 +147,7 @@ func ChangeLineItems(ctx *fasthttp.RequestCtx) {
 	}
 
 	inv := models.Invoice{}
-	err := models.GetDB().Table("invoices").Where("id = ?", (&ID).String()).First(&inv).Error
+	err := models.GetDB().Table("invoice").Where("id = ?", (&ID).String()).First(&inv).Error
 	if err != nil {
 		middleware.ResponseMaker(ctx, fasthttp.StatusInternalServerError, false, "Connection Error.", "noData")
 		return
@@ -174,14 +174,34 @@ func ChangeLineItems(ctx *fasthttp.RequestCtx) {
 
 }
 
+func GetInvoice(ctx *fasthttp.RequestCtx) {
+	ID, _ := uuid.FromString(ctx.UserValue("ID").(string))
+
+	inv := &models.Invoice{}
+	err := models.GetDB().Table("invoice").Where("id = ?", ID).Find(inv)
+	if err != nil {
+		middleware.ResponseMaker(ctx, fasthttp.StatusInternalServerError, false, "Error Getting Invoice.", "noData")
+		return
+	}
+
+	middleware.ResponseMaker(ctx, fasthttp.StatusOK, true, "Got Invoice.", map[string]interface{}{"invoice": inv})
+	return
+}
+
 func GetFormItems(ctx *fasthttp.RequestCtx) {
 	mats := models.Material{}
-	err := models.GetDB().Table("materials").Find(&mats).Error
+	err := models.GetDB().Table("material").Find(&mats).Error
 	if err != nil {
 		middleware.ResponseMaker(ctx, fasthttp.StatusInternalServerError, false, "Connection Error.", "noData")
 		return
 	}
+	custEmails := []string{}
+	cust := &[]models.User{}
+	models.GetDB().Table("user").Where("role = ?", "Customer").Find(cust)
+	for _, cust := range *cust {
+		custEmails = append(custEmails, cust.Email)
+	}
 
-	middleware.ResponseMaker(ctx, fasthttp.StatusOK, true, "Got Invoice EditCr8 Form Items.", map[string]interface{}{"materials": mats})
+	middleware.ResponseMaker(ctx, fasthttp.StatusOK, true, "Got Invoice EditCr8 Form Items.", map[string]interface{}{"materials": mats, "custEmails": custEmails})
 	return
 }

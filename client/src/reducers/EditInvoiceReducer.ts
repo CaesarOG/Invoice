@@ -1,7 +1,7 @@
 import { ActionType, getType } from 'typesafe-actions'
 import { EditInvoiceAction } from '../actions'
 import { Reducer }  from 'redux'
-import { FrgnField, Invoice } from '../actions/services/models';
+import { FrgnField, Invoice, User } from '../actions/services/models';
 import { history } from '../App'
 
 export interface EditInvoiceState {
@@ -12,16 +12,25 @@ export interface EditInvoiceState {
     supplyCost: number
     status: string
     materials: FrgnField[]
+    custEmails: string[]
     notes: FrgnField[]
     materialsChecked: string[]
     editOrCreate: string
     error: string
     errOpen: boolean
+    note: {message?: string}
+    user: User
+    stringtoMats: {[x:string]: any}
+    custEmail: string
+    invoice: Invoice
+    id?: string
 }
 
 export const editInvinitialState: EditInvoiceState = {
     name: "", description: "", billableHrs: 0.5, wageRate: 0.0, supplyCost: 0.0, status: 'Ready', materials: [], notes: [], materialsChecked: [],
-    editOrCreate: "create", error: "", errOpen: false
+    editOrCreate: "Create", error: "", errOpen: false, note: {message: ""}, user: new User(), custEmails: [], stringtoMats: {}, custEmail: "",
+    invoice: {name: '', description: '', billableHrs: 0.0, wageRate: 0.0, supplyCost: 0.0, status: '', 
+    materials: [], notes: [], due: new Date(), custEmail: "", contrEmail: ""}
 }
 
 type EditInvoiceAction = ActionType<typeof EditInvoiceAction>;
@@ -34,16 +43,23 @@ const editInvReducer: Reducer<EditInvoiceState, EditInvoiceAction> = (state: Edi
             return {
                 ...state, errOpen: action.payload.errOpen, error: action.payload.error
             }
+        
+        case getType(EditInvoiceAction.addNote):
+            let notes = state.invoice!.notes
+            notes.push(action.payload.n)
+            return {
+                ...state, invoice: {...state.invoice, notes}
+            }
 
         case getType(EditInvoiceAction.editOrCreateInv.success):
-            setTimeout(() => history.push('/', {...(action.payload), user: action.payload.user!}), 100)
+            setTimeout(() => history.push('/', {...(action.payload), user: state.user}), 100)
             return {
                 ...state
             }
 
         case getType(EditInvoiceAction.getFormItems.success):
             return {
-                ...state, ...(action.payload)
+                ...state, ...(action.payload), editOrCreate: action.payload.edCr8
             }
 
         case getType(EditInvoiceAction.getFormItems.failure):

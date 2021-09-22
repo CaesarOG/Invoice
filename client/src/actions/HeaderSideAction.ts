@@ -1,11 +1,8 @@
-import { createAction, createAsyncAction, isActionOf } from 'typesafe-actions'
+import { createAction } from 'typesafe-actions'
 import { Theme } from '@material-ui/core';
-import { Epic } from 'redux-observable'
-import { switchMap, mergeMap, filter, catchError } from 'rxjs/operators'
-import { from, of } from 'rxjs'
-import {RootAction, RootState, Services } from 'MyTypes'
 import services from './services'
-import { User, Notification, epicErr, Res, obj, Invoice } from './services/models'
+import { User, Notification } from './services/models'
+import React from 'react';
 
 
 const handleWindowWidthChange = createAction('@@sidebar/HANDLE_WINDOW_WIDTH',
@@ -43,16 +40,19 @@ const logout = createAction('@@header/LOGOUT',
     }
 )()
 
-const setSignedIn = createAction('@@header/SIGNED_IN',
-    (usr?: User) => {
+const setUserSigned = createAction('@@header/SET_SIGNED_IN',
+    (usr: User) => {
         const user = usr?usr:services.localStorage.loadItem<User>('user')
-        
         const signedIn = Boolean(user)
         const now = new Date()
 
-        let notifs: Invoice[] = []
-        user.invoices.forEach(inv => inv.due < now && user.role == "Customer"?notifs.push(inv):null)
-        return { signedIn, user, notifs }
+        let notifs: Notification[] = []
+        if (user.role === 'Customer') {
+            user.custInvoices.forEach(inv => inv.due < now ? notifs.push({message: 'Invoice '+inv.name+' is due!'}):null)
+        }
+        
+
+        return {notifs, user, signedIn}
     }
 )()
 
@@ -62,33 +62,15 @@ const toggleSearch = createAction('@@header/TOGGLE_SEARCH',
     )
 )()
 
-const openNotificationsMenu = createAction('@@header/OPEN_NOTIF_MENU',
-    (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => (
-        { notificationsMenu: e.currentTarget, isNotificationsUnread: false }
-    )
+
+const openNotifsMenu = createAction('@@header/OPEN_NOTIF_MENU',
+    (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => 
+        ({ notificationsMenu: e.currentTarget, isNotificationsUnread: false })
 )()
 
 const closeNotificationsMenu = createAction('@@header/NOTIF_MENU_CLOSE',
     (event: React.MouseEvent<HTMLLIElement, MouseEvent>) => ( 
         { notificationsMenu: null }
-    )
-)()
-
-const clickCmpyNtfns = createAction('@@header/CLICK_CMPY_NTFNS',
-    (e: React.MouseEvent<HTMLLIElement, MouseEvent>, cmpyNtfns: Array<Notification>) => (
-        { cmpyNtfns }
-    )
-)()
-
-const clickFundNtfn = createAction('@@header/CLICK_FUND_NTFN',
-    (e: React.MouseEvent<HTMLLIElement, MouseEvent>, ntfn: Notification) => (
-        { ntfn }
-    )
-)()
-
-const cmpyReturnNtfn = createAction('@@header/CMPY_RETURN_NTFN',
-    (e: React.MouseEvent<HTMLLIElement, MouseEvent>, ntfn: Notification) => (
-        { ntfn }
     )
 )()
 
@@ -105,8 +87,8 @@ const closeProfileMenu = createAction('@@header/PROFILE_MENU_CLOSE',
 )()
 
 const closeDialog = createAction('@@header/CLOSE_DIALOG',
-    (event: React.MouseEvent<HTMLButtonElement, MouseEvent>, ntfnType: string) => (
-        {ntfnType}
+    (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => (
+        {}
     )
 )()
 
@@ -127,6 +109,11 @@ const handleCloseErr = createAction('@@header/CLOSE_ERR_SNACKBAR',
     } 
 )();
 
+const goInvoice = createAction('@@header/GO_INVOICE',
+    (e: any, notif: Notification) => {
+        return {notif}
+    })()
+
 const toggleSidebar = createAction('@@app/TOGGLE_SIDEBAR',
     (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
         return {}
@@ -142,14 +129,12 @@ export { sidebarActions as SideBarAction }
 const headerActions = {
     logout,
     goHome,
-    openNotificationsMenu,
+    openNotifsMenu,
     closeNotificationsMenu,
-    clickCmpyNtfns,
-    clickFundNtfn,
-    cmpyReturnNtfn,
+    goInvoice,
     openProfileMenu,
     closeProfileMenu,
-    toggleSearch, setSignedIn,
+    toggleSearch, setUserSigned,
     handleChangeSingleSel,
     closeDialog, handleCloseErr
 }

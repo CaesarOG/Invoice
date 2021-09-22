@@ -11,10 +11,12 @@ export interface RegisterState {
     confirmPassword: string
     error: string
     errOpen: boolean
+    isCust: boolean
+    isContr: boolean
 }
 
 export const reginitialState: RegisterState = {
-    firstName: "", lastName: "", email: "", password: "", confirmPassword: "", error: "", errOpen: false
+    firstName: "", lastName: "", email: "", password: "", confirmPassword: "", error: "", errOpen: false, isCust: false, isContr: false
 }
 
 type RegisterAction = ActionType<typeof RegisterAction>;

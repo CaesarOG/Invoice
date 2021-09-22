@@ -5,8 +5,7 @@ import { Router, Switch } from 'react-router-dom'
 import { Helmet } from 'react-helmet'
 import { createBrowserHistory } from 'history'
 import { MuiThemeProvider, createMuiTheme, createStyles, withStyles, Theme, WithStyles } from '@material-ui/core/styles'
-import { SignIn, SignUp, PrivateRoute, ForwardRoute, Header, PrivateHome, SideBar, CompaniesList, FirmsList, 
-  FoundersList, FundersList, NotificationList, CompanyDet, CompanyNtfn } from './components'
+import { SignIn, SignUp, PrivateRoute, ForwardRoute, Header, PrivateHome, SideBar } from './components'
 import './App.css'
 import classnames from 'classnames'
 import { connect, MapStateToProps } from 'react-redux' //MapDispatchToProps
@@ -15,6 +14,8 @@ import { AppState } from './reducers/HeaderSideReducer'
 import { AppAction } from './actions'
 import { indigo, pink, orange } from '@material-ui/core/colors';
 import { CssBaseline } from '@material-ui/core';
+import { InvoiceDet } from './components/InvoiceDet';
+import { EditInvoice } from './components/EditInvoice';
 
 export const history = createBrowserHistory()
 // type Props = RouteComponentProps<any>;
@@ -124,7 +125,7 @@ https://stackoverflow.com/questions/44121069/how-to-pass-params-with-history-pus
     const { classes, isSidebarOpened, toggleSidebar } = this.props 
     return (
       <div className={classes.root}>
-        <Helmet><title> startupXchange </title></Helmet>
+        <Helmet><title> Invoices </title></Helmet>
         <Router history={history}>
         <CssBaseline />
         <MuiThemeProvider theme={theme}>
@@ -134,6 +135,8 @@ https://stackoverflow.com/questions/44121069/how-to-pass-params-with-history-pus
             <div className={classes.fakeToolbar} />
             <Switch>
               <PrivateHome exact path="/" />
+              <PrivateRoute exact path='/detail/:id' comp={InvoiceDet} />
+              <PrivateRoute exact path='/editcr8/:id' comp={EditInvoice} />
               <ForwardRoute exact path="/signin" SignIn={SignIn} /> 
               <ForwardRoute exact path="/signup" SignUp={SignUp} />
             </Switch>

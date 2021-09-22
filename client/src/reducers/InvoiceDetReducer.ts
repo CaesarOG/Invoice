@@ -2,33 +2,38 @@ import { ActionType, getType } from 'typesafe-actions'
 import { InvoiceDetAction } from '../actions'
 import { Reducer }  from 'redux'
 import { history } from '../App'
-import { Invoice } from '../actions/services/models'
+import { Invoice, User } from '../actions/services/models'
 
 export interface InvoiceDetState {
     invoice: Invoice
+    user: User
+    id: string
 }
  
-export const cmpyDetInitialState: InvoiceDetState = {
+export const invcDetInitialState: InvoiceDetState = {
     invoice: {name: '', description: '', billableHrs: 0.0, wageRate: 0.0, supplyCost: 0.0, status: '', 
-    materials: [], notes: [], due: new Date()}
+    materials: [], notes: [], due: new Date(), custEmail: "", contrEmail: ""}, user: new User(), id: ""
 }
 
 type InvoiceDetAction = ActionType<typeof InvoiceDetAction>;
 
-const cmpyDetReducer: Reducer<InvoiceDetState, InvoiceDetAction> = (state: InvoiceDetState = cmpyDetInitialState, action: InvoiceDetAction): InvoiceDetState => {
+const invDetReducer: Reducer<InvoiceDetState, InvoiceDetAction> = (state: InvoiceDetState = invcDetInitialState, action: InvoiceDetAction): InvoiceDetState => {
     switch(action.type) {
-        case getType(InvoiceDetAction):
-            history.push(`/founder/${action.payload.founId}`)
-            return state
-
-        case getType(InvoiceDetAction):
+        case getType(InvoiceDetAction.editcr8):
+            history.push(`/editcr8/${action.payload.inv.ID}`)
+            return state        
+            
+        case getType(InvoiceDetAction.getInvoice.success):
             return {
-                ...state, company: action.payload.company
+                ...state, ...(action.payload), invoice: action.payload.inv!
             }
-
+        case getType(InvoiceDetAction.getInvoice.failure):
+            return {
+                ...state, ...(action.payload)
+            }
         default:
             return state
     }
 }
 
-export { cmpyDetReducer as InvoiceDetReducer }
+export { invDetReducer as InvoiceDetReducer }

@@ -1,9 +1,8 @@
-import { Res, PostOptions, Login, Register, invListSucc, Notification, invListReq, User, GetOptions, FrgnField, Invoice, editcr8Succ, getFormSucc } from './models'
-import services from './index';
+import { Res, PostOptions, Login, Register, invListSucc, invListReq, User, GetOptions, FrgnField, Invoice, editcr8Succ, getFormSucc, obj } from './models'
 
 var postOptions = new PostOptions()
 var getOptions = new GetOptions()
-const serverURL = "https://stagingapp.startupxchange.com" // "http://localhost:9990"
+const serverURL = "http://localhost:9990" // "54.226.241.160:9990"
 
 const handleResponse = (res: Response): Promise<{[x:string]: any}|string> => {
     return new Promise( (resolve: (data: {[x: string]: any}|string | PromiseLike<{[x: string]: any}|string>) => void, reject: (err: Res) => void) => {
@@ -40,8 +39,8 @@ const auth = {
         })
     }, 
 
-    register: ( {firstName, lastName, email, password}: {[x:string]: any}): Promise<Register> => {
-        postOptions.body = JSON.stringify({firstName, lastName, email, password})
+    register: ( {firstName, lastName, email, password, role}: {[x:string]: any}): Promise<Register> => {
+        postOptions.body = JSON.stringify({firstName, lastName, email, password, role})
         return new Promise( (resolve: (value: Register | PromiseLike<Register>) => void, reject: (err: Res) => void) => {
             fetch(`${serverURL}/api/auth/register`, postOptions)
             .then( response => {
@@ -58,8 +57,10 @@ const auth = {
 }
 
 const invoice = {
-    createinv: (inv: Invoice): Promise<editcr8Succ> => {
+    createinv: (inv: Invoice, materials: FrgnField[], materialsChecked: string[], stringtoMats: obj): Promise<editcr8Succ> => {
         postOptions.body = JSON.stringify(inv)
+        inv.materials = []
+        materialsChecked.forEach(m => inv.materials.push(materials[stringtoMats[m]]))
         return new Promise( (resolve: (value: editcr8Succ | PromiseLike<editcr8Succ>) => void, reject: (err: Res) => void) => {
             fetch(`${serverURL}/api/invc/create`, postOptions)
             .then( response => {
@@ -73,7 +74,7 @@ const invoice = {
         })
     },
 
-    getmanyinvs: ({offset, limit, query, place}: invListReq, curPg: number, id: string): Promise<invListSucc> => {
+        getmanyinvs: ({offset, limit, query, place}: invListReq, curPg: number, usr: User): Promise<invListSucc> => {
         return new Promise( (resolve: (value: invListSucc | PromiseLike<invListSucc>) => void, reject: (err: Res) => void) => {
             let pL = place as string
             if (query) {
@@ -81,7 +82,10 @@ const invoice = {
             } else {
                 getOptions.headers = {'Offset': `${offset}`,'Limit': `${limit}`, 'Place': `${pL}`}
             }
-            fetch(`${serverURL}/api/invc/getmany/${id}`, getOptions)
+            if (usr.role === 'Admin') {
+                getOptions.headers['Admin'] = "True"
+            }
+            fetch(`${serverURL}/api/invc/getmany/${usr.ID}`, getOptions)
             .then( response => {
                 handleResponse(response).then( data => {
                     resolve(data as invListSucc)
@@ -92,9 +96,15 @@ const invoice = {
         });
     },
 
-    changelineitems: (inv: Invoice, id: string): Promise<editcr8Succ> => {
+    changelineitems: (inv: Invoice, id: string,  materials: FrgnField[], materialsChecked: string[], stringtoMats: obj): Promise<editcr8Succ> => {
         return new Promise( (resolve: (value: editcr8Succ | PromiseLike<editcr8Succ>) => void, reject: (err: Res) => void) => {
-            fetch(`${serverURL}/api/invc/change/${id}`, getOptions)
+            var dat: obj = {'a': 1}
+            inv.materials = []
+            materialsChecked.forEach(m => inv.materials.push(materials[stringtoMats[m]]))
+            dat.name = inv.name; dat.description = inv.description; dat.billableHrs = inv.billableHrs; dat.wageRate = inv.wageRate;
+            dat.supplyCost = inv.supplyCost; dat.materials = inv.materials; dat.notes = inv.notes
+            postOptions.body = JSON.stringify(dat)
+            fetch(`${serverURL}/api/invc/change/${id}`, postOptions)
             .then( response => {
                 handleResponse(response).then( data => {
                     resolve(data as editcr8Succ)
@@ -111,6 +121,20 @@ const invoice = {
             .then( response => {
                 handleResponse(response).then( data => {
                     resolve(data as getFormSucc)
+                })
+                .catch(err => reject(handleNoResponse(err)))
+            })
+            .catch(err => reject(handleNoResponse(err)))
+
+        });
+    },
+
+    getone: (id: string): Promise<{invoice: Invoice}> => {
+        return new Promise( (resolve: (value: {invoice: Invoice} | PromiseLike<{invoice: Invoice}>) => void, reject: (err: Res) => void) => {
+            fetch(`${serverURL}/api/invc/get/${id}`)
+            .then( response => {
+                handleResponse(response).then( data => {
+                    resolve(data as {invoice: Invoice})
                 })
                 .catch(err => reject(handleNoResponse(err)))
             })

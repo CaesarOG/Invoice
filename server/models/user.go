@@ -16,7 +16,7 @@ type User struct {
 	LastName      string              `json:"lastName"`
 	FullName      string              `json:"fullName"`
 	Role          string              `json:"role"`
-	InvoicesCust  []Invoice           `json:"invoicesCust" gorm:"foreignkey:CustID;"`
-	InvoicesContr []Invoice           `json:"invoicesContr" gorm:"foreignkey:ContrID;"`
+	InvoicesCust  []Invoice           `json:"custInvoices" gorm:"foreignkey:CustID;"`
+	InvoicesContr []Invoice           `json:"contrInvoices" gorm:"foreignkey:ContrID;"`
 	MapInvPaid    map[*uuid.UUID]bool `json:"mapInvPaid" sql:"-"`
 }

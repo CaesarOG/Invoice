@@ -1,7 +1,8 @@
 export interface FrgnField { payload?: string, name?: string, message?: string }
-export interface Notification { message?: string };
+export interface Notification { message?: string, ID?: string };
 
 export interface Invoice {
+    ID?: string
     name: string
     description: string
     billableHrs: number
@@ -10,6 +11,8 @@ export interface Invoice {
     status: string
     materials: FrgnField[]
     notes: FrgnField[]
+    custEmail: string
+    contrEmail: string
     due: Date
 
 }
@@ -23,13 +26,14 @@ interface IUser {
     password: string
     fullName: () => string
     role?: string
-    invoices: Invoice[]
+    custInvoices?: Invoice[]
+    contrInvoices?: Invoice[]
 }
 
 export class User implements IUser {
      
     constructor(public ID: string="", public firstName: string="", public lastName: string="", public phone: string="",
-        public email: string="", public password: string="", public role?: string, public invoices: Invoice[]=[]) {}
+        public email: string="", public password: string="", public role?: string, public custInvoices: Invoice[]=[], public contrInvoices: Invoice[]=[]) {}
     
     public fullName(): string  { //using 'get' converts to property invoked implicitly not callable
         return `${this.firstName} ${this.lastName}`
@@ -53,13 +57,14 @@ export interface Login extends Register {
 
 /*------EPIC-ACTIONS----------------------------------------------------------------------------------------------------------------------------------------*/
 export type signReq = {email: string, password: string}; export type signSucc = {user: User, email: string, password: string};
-export type regSucc = {firstName: string, lastName: string, email: string, password: string, confirmPassword: string}; 
+export type regSucc = {firstName: string, lastName: string, email: string, password: string, confirmPassword: string, isCust: boolean, isContr: boolean}; 
 
-export type editcr8Req = {invoice: Invoice, editOrCr8: string, id?: string}
+export type editcr8Req = {invoice: Invoice, editOrCr8: string, id?: string, materials: FrgnField[], materialsChecked: string[], stringtoMats: {[x: string]: any}}
 export type editcr8Succ = {invoice: Invoice}
 
-export type getformSucc = {materials: FrgnField[]}
+export type getFormSucc = {materials: FrgnField[], custEmails: string[], stringtoMats?: {[x:string]: any}, invoice?: Invoice, id?: string, edCr8: string}
 
+export type getInvModel = {inv?: Invoice, id?: string, user: User}
 
 type Pagination = { offset: number, limit: number, count?: number, place: place };
 export type place = 'page'|'rows'|'search'|'sClose';

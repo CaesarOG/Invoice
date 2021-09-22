@@ -3,11 +3,9 @@ import { SignUpAction } from '../actions'
 import { Reducer }  from 'redux'
 
 export interface SignUpState {
-    activeStep: 0 | 1
 }
 
 export const sigUinitialState: SignUpState = {
-    activeStep: 0 as 0 | 1
 }
 
 type SignUpAction = ActionType<typeof SignUpAction>;

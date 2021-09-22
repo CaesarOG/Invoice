@@ -3,7 +3,7 @@ import { Route, Redirect, RouteProps } from 'react-router-dom';
 import services from '../actions/services'
 import { User, obj } from '../actions/services/models';
 import { ConnectedComponent } from 'react-redux';
-import { InvoicesHome } from './'
+import { InvoicesHome, EditInvoice } from './'
 
 
 type FwdRt = { SignIn?: ConnectedComponent<any, any>, SignUp?: ConnectedComponent<any, any> }
@@ -12,7 +12,7 @@ export const ForwardRoute: React.FC<RouteProps & FwdRt> = props => {
   let { SignIn, SignUp:pre } = props
 return <Route path={props.path} {...props} render={
   props => { 
-    if (user&&user.role != null && user.role != "") { 
+    if (user&&user.role !== null && user.role !== "") { 
       return <Redirect to={{pathname: "/", state: {user}}} /> 
     } else {
       if(SignIn) { 
@@ -25,7 +25,6 @@ return <Route path={props.path} {...props} render={
   }} />
 }
 //http://mtgkuy.blogspot.com/2019/01/typescript-3-jsx-element-type-component.html#, bury face grnd, scratch midsc, cat stretch, hump leg, shake+sneeze
-
 
 export const PrivateHome: React.FC<RouteProps> = props => {
   //console.log(  (history.location.state! as obj).user + " !!!! the user from useHistory!!")
@@ -40,11 +39,33 @@ export const PrivateHome: React.FC<RouteProps> = props => {
 
   return <Route path={props.path} {...props} render={ 
   props => { 
-    if (fromOther || (user&&user.role != null && user.role != "") ) {
-      return <InvoicesHome {...props} user={user} />
+    if (fromOther || (user&&user.role !== null && user.role !== "") ) {
+      return <InvoicesHome {...props} />
     } 
     else {
       return <Redirect to="/signin" />
+    }
+  } } />
+}
+
+export const OnlyContr: React.FC<RouteProps> = props => {
+  //console.log(  (history.location.state! as obj).user + " !!!! the user from useHistory!!")
+  var user: User
+  var fromOther: Boolean = false
+  if (props.location && props.location!.state && (props.location!.state! as obj).user) {
+    user = (props.location!.state! as obj).user
+    fromOther = true
+  } else {
+    user = services.localStorage.loadItem<User>('user')
+  }
+
+  return <Route path={props.path} {...props} render={ 
+  props => { 
+    if (fromOther || (user&&user.role !== null && user.role === "Contractor") ) {
+      return <EditInvoice {...props} />
+    } 
+    else {
+      return <Redirect to={{pathname: "/", state: {user}}} />
     }
   } } />
 }
