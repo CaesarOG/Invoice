@@ -36,7 +36,7 @@ func Login(ctx *fasthttp.RequestCtx) {
 	}
 
 	user := models.Usertype{}
-	err := models.GetDB().Model(&models.Usertype{}).Where("email = ?", userAttempt.Email).Preload("Invoices").First(&user).Error
+	err := models.GetDB().Model(&models.Usertype{}).Where("email = ?", userAttempt.Email).First(&user).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			middleware.ResponseMaker(ctx, fasthttp.StatusUnauthorized, false, "Email Address Not Found.", "noData")

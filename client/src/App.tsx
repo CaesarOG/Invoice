@@ -136,7 +136,7 @@ https://stackoverflow.com/questions/44121069/how-to-pass-params-with-history-pus
             <Switch>
               <PrivateHome exact path="/" />
               <PrivateRoute exact path='/detail/:id' comp={InvoiceDet} />
-              <PrivateRoute exact path='/editcr8/:id' comp={EditInvoice} />
+              <PrivateRoute exact path='/editcr8' comp={EditInvoice} />
               <ForwardRoute exact path="/signin" SignIn={SignIn} /> 
               <ForwardRoute exact path="/signup" SignUp={SignUp} />
             </Switch>
@@ -146,7 +146,7 @@ https://stackoverflow.com/questions/44121069/how-to-pass-params-with-history-pus
       </div>
     )
   }
-  //for now think I'll make f_o_under editable only if you haven't already chosen a role
+
 }
 
 

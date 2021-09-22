@@ -273,26 +273,18 @@ class Header extends React.Component<PropsH, {}> {
             </div>
             <InputBase placeholder="Search..." classes={{ root: classes.inputRoot, input: classes.inputInput }} />
           </div>
-          {/* <IconButton color="inherit" aria-haspopup="true" aria-controls="mail-menu"
-            onClick={openMailMenu} className={classes.headerMenuButton} disabled={signedIn}
-          >
-            <Badge badgeContent={isMailsUnread ? messages.length : null} color="secondary">
-              <MailIcon classes={{ root: classes.headerIcon }} />
-            </Badge>
-          </IconButton>
-          */}
-          <IconButton color="inherit" aria-haspopup="true" aria-controls="profile-menu"
-            onClick={openProfileMenu} className={classes.headerMenuButton} disabled={!signedIn}
-          >
-            <AccountIcon classes={{ root: classes.headerIcon }} />
-          </IconButton>
-          {signedIn && <React.Fragment>
 
           <IconButton color="inherit" aria-haspopup="true" aria-controls="notifications-menu"
             onClick={openNotifsMenu} className={classes.headerMenuButton} disabled={!signedIn}
           >
             <NotificationImportant classes={{ root: classes.headerIcon }} />
           </IconButton>
+          <IconButton color="inherit" aria-haspopup="true" aria-controls="profile-menu"
+            onClick={openProfileMenu} className={classes.headerMenuButton} disabled={!signedIn}
+          >
+            <AccountIcon classes={{ root: classes.headerIcon }} />
+          </IconButton>
+          {signedIn && <React.Fragment>
           <Menu id="notifications-menu" open={Boolean(notificationsMenu)} anchorEl={notificationsMenu}
             onClose={closeNotificationsMenu} className={classes.headerMenu} disableAutoFocusItem >
               {notifications!.map(notification =>
@@ -323,6 +315,7 @@ class Header extends React.Component<PropsH, {}> {
           </React.Fragment>}
         </Toolbar>
       </AppBar>
+
       <Dialog open={dues}>
         <DialogTitle id="form-dialog-title">Overdue Invoices</DialogTitle>
         <DialogContent>

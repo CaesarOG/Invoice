@@ -18,7 +18,7 @@ export interface EditInvoiceState {
     editOrCreate: string
     error: string
     errOpen: boolean
-    note: {message?: string}
+    note: string
     user: User
     stringtoMats: {[x:string]: any}
     custEmail: string
@@ -28,9 +28,8 @@ export interface EditInvoiceState {
 
 export const editInvinitialState: EditInvoiceState = {
     name: "", description: "", billableHrs: 0.5, wageRate: 0.0, supplyCost: 0.0, status: 'Ready', materials: [], notes: [], materialsChecked: [],
-    editOrCreate: "Create", error: "", errOpen: false, note: {message: ""}, user: new User(), custEmails: [], stringtoMats: {}, custEmail: "",
-    invoice: {name: '', description: '', billableHrs: 0.0, wageRate: 0.0, supplyCost: 0.0, status: '', 
-    materials: [], notes: [], due: new Date(), custEmail: "", contrEmail: ""}
+    editOrCreate: "Create", error: "", errOpen: false, note: "", user: new User(), custEmails: [], stringtoMats: {}, custEmail: "",
+    invoice: new Invoice()
 }
 
 type EditInvoiceAction = ActionType<typeof EditInvoiceAction>;
@@ -43,10 +42,22 @@ const editInvReducer: Reducer<EditInvoiceState, EditInvoiceAction> = (state: Edi
             return {
                 ...state, errOpen: action.payload.errOpen, error: action.payload.error
             }
-        
+
+        case getType(EditInvoiceAction.setInv):
+            console.log(action.payload.inv)
+            if(action.payload.notes) {
+                return {
+                    ...state, invoice: action.payload.inv, notes: action.payload.notes
+                }
+            } else {
+                return {
+                    ...state, invoice: action.payload.inv
+                }
+            }
+
         case getType(EditInvoiceAction.addNote):
             let notes = state.invoice!.notes
-            notes.push(action.payload.n)
+            notes.push({message: action.payload.n})
             return {
                 ...state, invoice: {...state.invoice, notes}
             }

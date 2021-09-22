@@ -25,7 +25,7 @@ interface IUser {
     phone: string
     password: string
     fullName: () => string
-    role?: string
+    role: string
     custInvoices?: Invoice[]
     contrInvoices?: Invoice[]
 }
@@ -33,13 +33,20 @@ interface IUser {
 export class User implements IUser {
      
     constructor(public ID: string="", public firstName: string="", public lastName: string="", public phone: string="",
-        public email: string="", public password: string="", public role?: string, public custInvoices: Invoice[]=[], public contrInvoices: Invoice[]=[]) {}
+        public email: string="", public password: string="", public role: string="", public custInvoices: Invoice[]=[], public contrInvoices: Invoice[]=[]) {}
     
     public fullName(): string  { //using 'get' converts to property invoked implicitly not callable
         return `${this.firstName} ${this.lastName}`
     }
 }
 
+
+
+export const Invoice = function () { 
+    let inv: Invoice = { name: '', description: '', billableHrs: 3.2, wageRate: 12, supplyCost: 13.2, status: '', 
+    materials: [], notes: [], due: new Date(), custEmail: "", contrEmail: ""}
+    return inv
+} as any as { new (): Invoice; };
 
 
 /*------RESPONSES-------------------------------------------------------------------------------------------------------------------------------------------*/

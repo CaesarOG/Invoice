@@ -2,14 +2,13 @@ import React from 'react'
 import { connect, MapStateToProps } from 'react-redux' //MapDispatchToProps
 import { ActionType } from 'typesafe-actions'
 import { RootState } from 'MyTypes'
-import { Theme, withStyles, Grid, createStyles, WithStyles} from '@material-ui/core';
+import { Theme, withStyles, Grid, createStyles, WithStyles, Button } from '@material-ui/core';
 import { InvoicesHomeAction } from '../actions' 
 import { InvoicesHomeState } from '../reducers/InvoicesHomeReducer'
 import services from '../actions/services'
 import { User, obj } from '../actions/services/models';
 import { RouteComponentProps } from 'react-router';
 import MUIDataTable from 'mui-datatables'
-
 
 
 //before it was a function that manually said return and the object
@@ -24,7 +23,9 @@ const mapDispatchToProps = {
   invcChangeRowsPerPage: InvoicesHomeAction.getManyInvoices.request,
   invcSearchChange: InvoicesHomeAction.getManyInvoices.request,
   invcChangePage: InvoicesHomeAction.getManyInvoices.request,
-  updSearchTxt: InvoicesHomeAction.updSearchTxt
+  setUser: InvoicesHomeAction.setUser,
+  updSearchTxt: InvoicesHomeAction.updSearchTxt,
+  createInv: InvoicesHomeAction.createInv
 }
 type StateProps = ReturnType<typeof mapStateToProps>; 
 type DispatchProps = typeof mapDispatchToProps;
@@ -35,12 +36,13 @@ class InvoicesHome extends React.Component<Props, {}> {
 
   componentDidMount() {//https://tylermcginnis.com/react-router-query-strings/m
     let user = (this.props.location.state! as obj) && ((this.props.location.state! as obj).user)?(this.props.location.state! as obj).user:services.localStorage.loadItem<User>("user")
+    this.props.setUser(user)
     this.props.invcSearchChange({query: '', offset: 0, limit: this.props.limit, place: 'sClose', user: user})
   }
 
 
   render() {
-    const { classes, list, count, currentPage, searchText, limit,
+    const { classes, list, count, currentPage, searchText, limit, createInv,
     updSearchTxt, invcSearchChange, invcChangePage, invcChangeRowsPerPage, invclickRow, user } = this.props
 
     return ( 
@@ -65,6 +67,12 @@ class InvoicesHome extends React.Component<Props, {}> {
               }} 
             />
           </Grid>
+          { (user.role && user.role === 'Contractor') &&
+          <Grid item xs={12}>
+            <Button variant="contained" color="primary" onClick={createInv} 
+              className={classes.button}> Create Invoice </Button>
+          </Grid>
+          }
         </Grid>
       </React.Fragment>
       </div>

@@ -29,7 +29,8 @@ const mapDispatchToProps = {
   getInvItems: EditInvoiceAction.getFormItems.request,
   addNote: EditInvoiceAction.addNote,
   editcr8Req: EditInvoiceAction.editOrCreateInv.request,
-  handleChangeSingleSel: EditInvoiceAction.handleChangeSingleSel
+  handleChangeSingleSel: EditInvoiceAction.handleChangeSingleSel,
+  setInv: EditInvoiceAction.setInv
 }
 
 const styles = (theme: Theme) => createStyles({
@@ -153,14 +154,16 @@ class EditInvoice extends React.Component<Props, {}> {
     const id = this.props.match?.params.id as string
     let invoice: Invoice = (this.props.location!.state as obj) && (this.props.location!.state as obj).invoice
     let edCr8: string = (this.props.location!.state as obj) && (this.props.location!.state as obj).edcr8
-    if(!invoice || !invoice.name) this.props.getInvItems!({id, edCr8}) 
-    else this.props.getInvItems!({inv:this.props.invoice!, edCr8})
+    invoice = (!invoice || !invoice.name) ? new Invoice():invoice
+    this.props.setInv!(invoice)
+    if(!invoice || !invoice.name) this.props.getInvItems!({edCr8})
+    else this.props.getInvItems!({edCr8})
   }
 
   render() {
     const { classes, error, errOpen, handleCloseErr, handleChangeSelect, handleChange, custEmails, editcr8Req, stringtoMats,
-      materials, materialsChecked, notes, handleChangeSingleSel, invoice, note, addNote, editOrCreate } = getProps(this.props)
-    let inv: Invoice = invoice!
+      materials, materialsChecked, notes, handleChangeSingleSel, invoice, note, addNote, editOrCreate,
+      description, name, billableHrs, wageRate, supplyCost, custEmail } = getProps(this.props)
 
     return (
       <div className={classes.root} > {/*was a React.Fragment, switched to div for className*/}
@@ -178,20 +181,19 @@ class EditInvoice extends React.Component<Props, {}> {
       <React.Fragment>
         <main className={classes.layout}>
           <Paper className={classes.paper}>
-            { (invoice && invoice.name !== "") && (
             <Grid container direction="row" justify="space-evenly" alignItems="center" spacing={2}>
               <Grid item xs={12} >
                 <Box component="form">
                   <div>
-                    <TextField label="Name" placeholder="Name" className={classes.textField} name="inv.name" value={inv.name}
+                    <TextField label="Name" placeholder="Name" className={classes.textField} name="invoice.name" value={name}
                       onChange={handleChange} margin="normal" variant="outlined" />
-                    <TextField label="Description" placeholder="Description" className={classes.textField} name="inv.description" value={inv.description}
+                    <TextField label="Description" placeholder="Description" className={classes.textField} name="description" value={description}
                       onChange={handleChange} margin="normal" variant="outlined" />
-                    <TextField label="Billable Hrs" placeholder="1.0" className={classes.textField} name="inv.billableHrs" value={inv.billableHrs}
+                    <TextField label="Billable Hrs" placeholder="1.0" className={classes.textField} name="billableHrs" value={billableHrs}
                       onChange={handleChange} margin="normal" variant="outlined" />
-                    <TextField label="Wage Rate" placeholder="1.0" className={classes.textField} name="inv.wageRate" value={inv.wageRate}
+                    <TextField label="Wage Rate" placeholder="1.0" className={classes.textField} name="wageRate" value={wageRate}
                       onChange={handleChange} margin="normal" variant="outlined" />
-                    <TextField label="Supply Cost" placeholder="1.0" className={classes.textField} name="inv.supplyCost" value={inv.supplyCost}
+                    <TextField label="Supply Cost" placeholder="1.0" className={classes.textField} name="supplyCost" value={supplyCost}
                       onChange={handleChange} margin="normal" variant="outlined" />
                   </div>
                 </Box>
@@ -199,7 +201,7 @@ class EditInvoice extends React.Component<Props, {}> {
               <Grid item xs={12}>
                   <FormControl variant="outlined" required className={classes.inpWidth} fullWidth>
                     <InputLabel htmlFor="custEmail">Select Customer</InputLabel>
-                    <Select value={inv.custEmail} name="custEmail" fullWidth className={classes.inpWidth}
+                    <Select value={custEmail} name="custEmail" fullWidth className={classes.inpWidth}
                       onChange={handleChangeSingleSel} input={<Input id="custEmail" className={classes.inpWidth} fullWidth/>} MenuProps={MenuProps}
                     >
                       {custEmails.map( ce => (
@@ -208,7 +210,7 @@ class EditInvoice extends React.Component<Props, {}> {
                     </Select>
                   </FormControl>
               </Grid>
-              { (materials && notes && materials.length !== 0 && materials.length !== 0) && (
+              { (materials && materials.length !== 0) && (
               <React.Fragment>
                 <Grid item xs={12}>
                   <FormControl required className={classes.inpWidth} fullWidth>
@@ -232,9 +234,10 @@ class EditInvoice extends React.Component<Props, {}> {
                     </Select>
                   </FormControl>
                 </Grid>
+                { (invoice.notes && invoice.notes.length !== 0) && (
                 <Grid item xs={12}>
                   <List > {/*sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}*/}
-                    {inv.notes.map((note, idx) => (
+                    {invoice.notes.map((note, idx) => (
                       <React.Fragment>
                       <ListItem alignItems="flex-start">
                       <ListItemAvatar>
@@ -250,15 +253,16 @@ class EditInvoice extends React.Component<Props, {}> {
                         }
                       />
                     </ListItem>
-                    { idx !== notes.length - 1 && <Divider variant="inset" component="li" /> }
+                    { idx !== invoice.notes.length - 1 && <Divider variant="inset" component="li" /> }
                     </React.Fragment>
                     )) }
                   </List>
                 </Grid>
+                )}
                 <Grid item xs={12}>
                   <FormControl required>
                   <InputLabel htmlFor="note">Note</InputLabel>
-                    <TextField label="note" multiline rows={4} placeholder="A Note." className={classes.textField} name="note" value={note}
+                    <TextField label="Note" multiline rows={4} placeholder="A Note." className={classes.textField} name="note" value={note}
                       onChange={handleChange} margin="normal" variant="outlined" />
                   <Button variant="contained" color="primary" onClick={(e) => {addNote(note)}} className={classes.button}> Add Note </Button>
                   </FormControl>
@@ -266,13 +270,12 @@ class EditInvoice extends React.Component<Props, {}> {
                 </Grid>
                 <Grid item xs={12}>
                   <Button variant="contained" color="primary" onClick={(e) => editcr8Req({invoice, materials, materialsChecked, editOrCr8: editOrCreate, stringtoMats})} 
-                    className={classes.button}> {editOrCreate==="Create"?"Create Invoice":"Edit Invoice"} </Button>
+                    className={classes.button}> {editOrCreate==="Create"?"Create Invoice":"Apply Edit Invoice"} </Button>
                 </Grid>
 
               </React.Fragment>       
               )}
             </Grid>
-            )}
             </Paper>
           </main>
         <Snackbar anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} open={errOpen} autoHideDuration={6000} onClose={handleCloseErr}

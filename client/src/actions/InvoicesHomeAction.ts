@@ -8,9 +8,9 @@ import { Res, epicErr, invListReq, invListSucc, User } from './services/models'
 
 
 const getManyInvoices = createAsyncAction(
-    '@@invoiceslist/INVS_GETMANY_REQUEST',
-    '@@invoiceslist/INVS_GETMANY_SUCCESS',
-    '@@invoiceslist/INVS_GETMANY_FAILURE'
+    '@@invoiceshome/INVS_GETMANY_REQUEST',
+    '@@invoiceshome/INVS_GETMANY_SUCCESS',
+    '@@invoiceshome/INVS_GETMANY_FAILURE'
 )<invListReq & {user: User}, invListSucc & {user: User}, epicErr>();
 //type codeTokenFail = ActionType<typeof codeToken.failure>; type codeTokenSucc = ActionType<typeof codeToken.success>;
 
@@ -39,25 +39,37 @@ action$.pipe(
     )
 )
 
+const createInv = createAction('@@invoiceshome/CR8_INV',
+    (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => (
+        {edcr8: "Create"}
+    )
+)()
 
-const invClickRow = createAction('@@founderslist/CLICK_FOUND',
+const setUser = createAction('@@invoiceshome/SET_USER',
+    (user: User) => (
+        {user}
+    )
+)()
+
+
+const invClickRow = createAction('@@invoiceshome/CLICK_FOUND',
     (rowData: string[], rowMeta: { dataIndex: number; rowIndex: number }, user) => (
         {rowData, rowMeta, user}
     )
 )()
 
-
-const updSearchTxt = createAction('@@masterlists/SEARCH_CHANGE',
+const updSearchTxt = createAction('@@invoiceshome/SEARCH_CHANGE',
     (searchText: string) => (
         {searchText}
     )
 )()
 
-
 const InvoicesHomeActions = {
     invClickRow,
     getManyInvoices,
-    updSearchTxt
+    updSearchTxt,
+    setUser,
+    createInv
 }
 
 export { InvoicesHomeActions as InvoicesHomeAction }

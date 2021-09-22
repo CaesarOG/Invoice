@@ -47,7 +47,7 @@ const setUserSigned = createAction('@@header/SET_SIGNED_IN',
         const now = new Date()
 
         let notifs: Notification[] = []
-        if (user.role === 'Customer') {
+        if (user.role === 'Customer' && user.custInvoices && user.custInvoices.length > 0) {
             user.custInvoices.forEach(inv => inv.due < now ? notifs.push({message: 'Invoice '+inv.name+' is due!'}):null)
         }
         

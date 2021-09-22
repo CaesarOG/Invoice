@@ -92,7 +92,16 @@ const handleCloseErr = createAction('@@editcr8inv/CLOSE_ERR_SNACKBAR',
 )()
 
 const addNote = createAction('@@editcr8inv/ADD_NOTE',
-    (n: {message?: string}) => ({n})
+    (n: string) => ({n})
+)()
+
+const setInv = createAction('@@editcr8inv/SET_INV',
+    (inv: Invoice) => {
+        if (inv.notes.length !== 0) {
+            return { notes: inv.notes, inv}
+        }
+        return {inv}
+    }
 )()
 
 
@@ -115,7 +124,7 @@ action$.pipe(
                 (data: getFormSucc) => {
                     let stringtoMats: {[x:string]: any} = {}
                     data.materials.forEach((m, i) => stringtoMats[m.name!] = i)
-                    return of( getFormItems.success({...data, stringtoMats, invoice: action.payload.inv, id: action.payload.id, edCr8: action.payload.edCr8}) )
+                    return of( getFormItems.success({...data, stringtoMats, edCr8: action.payload.edCr8}) )
                 }
             ),
             catchError(
@@ -137,7 +146,8 @@ const editInvActions = {
     handleChangeSingleSel,
     editOrCreateInv,
     getFormItems,
-    addNote
+    addNote,
+    setInv
 };
 
 export default editInvActions

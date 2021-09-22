@@ -189,16 +189,16 @@ func GetInvoice(ctx *fasthttp.RequestCtx) {
 }
 
 func GetFormItems(ctx *fasthttp.RequestCtx) {
-	mats := models.Material{}
+	mats := []models.Material{}
 	err := models.GetDB().Table("material").Find(&mats).Error
 	if err != nil {
 		middleware.ResponseMaker(ctx, fasthttp.StatusInternalServerError, false, "Connection Error.", "noData")
 		return
 	}
 	custEmails := []string{}
-	cust := &[]models.Usertype{}
-	models.GetDB().Table("user").Where("role = ?", "Customer").Find(cust)
-	for _, cust := range *cust {
+	cust := []models.Usertype{}
+	models.GetDB().Table("usertype").Where("role = ?", "Customer").Find(&cust)
+	for _, cust := range cust {
 		custEmails = append(custEmails, cust.Email)
 	}
 
