@@ -19,7 +19,7 @@ import (
 )
 
 //AbsPath of code.
-const AbsPath string = "/home/ubuntu/Invoice/" //Users/neeraj/Projects/frontend-homework/"
+const AbsPath string = "/home/ubuntu/Invoice/" // "Users/neeraj/Projects/frontend-homework/"
 
 //ServerEnv "$HOME/Projects/sxc/server/.env" .
 const ServerEnv string = AbsPath + "server/.env"

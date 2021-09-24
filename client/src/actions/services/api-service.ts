@@ -4,7 +4,7 @@ import { Res, PostOptions, Login, Register, invListSucc, invListReq, User, GetOp
 
 var postOptions = new PostOptions()
 var getOptions = new GetOptions()
-const serverURL = "http://54.226.241.160:9990"// "http://localhost:9990" // "54.226.241.160:9990"
+const serverURL = "http://54.226.241.160:9990" // "http://localhost:9990"
 
 const handleResponse = (res: Response): Promise<{[x:string]: any}|string> => {
     return new Promise( (resolve: (data: {[x: string]: any}|string | PromiseLike<{[x: string]: any}|string>) => void, reject: (err: Res) => void) => {
@@ -21,7 +21,7 @@ const handleResponse = (res: Response): Promise<{[x:string]: any}|string> => {
 }
 
 const handleNoResponse = (err: Res|Error): Res => {
-    // return new Promise( ( reject/*: (err: sXcRes) => void*/) => {
+    // return new Promise( ( reject/*: (err: sXcRes) => void*/) => { Useless to add bcos no async or internal promise
         return ({status: false, message: err.message, data: {}})
     // })
 }

@@ -6,11 +6,12 @@ import { Grid, Theme, withStyles, createStyles, WithStyles, List, ListItem, List
 Avatar, Divider, Button, Typography as TypogCore, Snackbar, Slide } from '@material-ui/core';
 import { ResponsiveContainer } from 'recharts';
 import { InvoiceDetAction } from '../actions'
-import { obj } from '../actions/services/models'
+import { obj, User } from '../actions/services/models'
 import { Widget, Typography } from './WidgetAndWrappers'
 import MySnackbarContent from './MySnackbarContent'
 import { InvoiceDetState } from '../reducers/InvoiceDetReducer'
 import { RouteComponentProps } from 'react-router-dom';
+import services from '../actions/services';
 
 //before it was a function that manually said return and the object
 const mapStateToProps: MapStateToProps<InvoiceDetState, {}, RootState> = (state: RootState) => ({
@@ -36,7 +37,7 @@ class InvoiceDet extends React.Component<Props, {}> {
   componentDidMount() {//https://tylermcginnis.com/react-router-query-strings/
     const id = this.props.match.params.id as string
     let invoice = (this.props.location.state! as obj) && (this.props.location.state! as obj).inv
-    let user = (this.props.location.state! as obj) && (this.props.location.state! as obj).user
+    let user = ( (this.props.location.state! as obj) && (this.props.location.state! as obj).user ) ? (this.props.location.state! as obj).user : services.localStorage.loadItem<User>("user")
     if (!invoice || !invoice.name) {
       this.props.getInvc({user, id})
     } else this.props.setInv(invoice, id, user)
