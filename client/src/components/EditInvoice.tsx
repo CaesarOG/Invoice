@@ -156,7 +156,7 @@ class EditInvoice extends React.Component<Props, {}> {
     let edCr8: string = (this.props.location!.state as obj) && (this.props.location!.state as obj).edcr8
     let user: User = (this.props.location!.state as obj) && (this.props.location!.state as obj).user
     invoice = (!invoice || !invoice.name) ? new Invoice():invoice
-    this.props.setInv!(invoice, user)
+    this.props.setInv!(invoice, user, edCr8)
     if(!invoice || !invoice.name) this.props.getInvItems!({edCr8})
     else this.props.getInvItems!({edCr8})
   }

@@ -3,6 +3,7 @@ import { Epic } from 'redux-observable'
 import { switchMap, mergeMap, filter, catchError, debounce } from 'rxjs/operators'
 import { from, of, interval } from 'rxjs'
 import {RootAction, RootState, Services } from 'MyTypes'
+import { HeaderAction } from '.'
 import { Res, epicErr, invListReq, invListSucc, User } from './services/models'
 
 
@@ -26,7 +27,7 @@ action$.pipe(
             mergeMap( /*<BuildOauth, Observable<sourceUrlSucc>>*/
                 (data: invListSucc) => {
                     logger.log(data.pagination);
-                    return of( getManyInvoices.success({...data, user: action.payload.user}))
+                    return of( HeaderAction.custNotifs(data.invoices, action.payload.user), getManyInvoices.success({...data, user: action.payload.user}))
                 }
             ),
             catchError( /*<sXcRes, Observable<sourceUrlFail>>*/

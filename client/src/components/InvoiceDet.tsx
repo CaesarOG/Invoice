@@ -3,11 +3,12 @@ import { connect, MapStateToProps } from 'react-redux' //MapDispatchToProps
 import { ActionType } from 'typesafe-actions'
 import { RootState } from 'MyTypes'
 import { Grid, Theme, withStyles, createStyles, WithStyles, List, ListItem, ListItemAvatar, ListItemText,
-Avatar, Divider, Button, Typography as TypogCore } from '@material-ui/core';
+Avatar, Divider, Button, Typography as TypogCore, Snackbar, Slide } from '@material-ui/core';
 import { ResponsiveContainer } from 'recharts';
 import { InvoiceDetAction } from '../actions'
 import { obj } from '../actions/services/models'
 import { Widget, Typography } from './WidgetAndWrappers'
+import MySnackbarContent from './MySnackbarContent'
 import { InvoiceDetState } from '../reducers/InvoiceDetReducer'
 import { RouteComponentProps } from 'react-router-dom';
 
@@ -21,7 +22,8 @@ type InvoiceDetAction = ActionType<typeof InvoiceDetAction>;
 const mapDispatchToProps = {
   getInvc: InvoiceDetAction.getInvoice.request,
   clickEdit: InvoiceDetAction.editcr8,
-  setInv: InvoiceDetAction.setInv
+  setInv: InvoiceDetAction.setInv,
+  handleCloseErr: InvoiceDetAction.handleCloseErr
 }
 
 type StateProps = ReturnType<typeof mapStateToProps>; 
@@ -41,13 +43,13 @@ class InvoiceDet extends React.Component<Props, {}> {
   }
 
   render() {
-    const { classes, invoice, user } = this.props
+    const { classes, invoice, user, clickEdit, errOpen, error, handleCloseErr } = this.props
     return (
       <div className={classes.root}>
         <Grid container spacing={5} alignItems="center" direction="row" justify="space-evenly">
           { (user && user.role && user.role === "Contractor") && 
           <Grid item xs={12}>
-            <Button variant="contained" color="primary"  
+            <Button variant="contained" color="primary" onClick={(e) => clickEdit(invoice, user)}
               className={classes.button}> Edit Invoice </Button>
           </Grid>
           }
@@ -160,19 +162,20 @@ class InvoiceDet extends React.Component<Props, {}> {
                   </List>
           </Grid>
         </Grid>
+        <Snackbar anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} open={errOpen} autoHideDuration={6000} onClose={handleCloseErr}
+          TransitionComponent={TransitionRight}
+        >
+          <MySnackbarContent variant="error" message={error} className={classes.margin} onClose={handleCloseErr} />
+        </Snackbar>
       </div>
     );
   }
 }
 
 
-// const TransitionRight = (props: any) => {
-//   return <Slide {...props} direction="right" />;
-// }
-
-// const ITEM_HEIGHT = 48;
-// const ITEM_PADDING_TOP = 8;
-// const MenuProps = {   PaperProps: {  style: { maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP, width: 250 }  }   };
+function TransitionRight(props: any) { //ComponentProps in react?
+  return <Slide {...props} direction="right" />;
+}
 
 const styles = (theme: Theme) => createStyles({
   root: {

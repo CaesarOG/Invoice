@@ -22,7 +22,14 @@ action$.pipe(
         from(api.invoice.getone(action.payload.id!)).pipe(
             mergeMap(
                 (data: {invoice: Invoice}) => {
-                    return of( getInvoice.success({user: action.payload.user, inv: data.invoice, id: action.payload.id}) )
+                    data.invoice.dueDate = new Date(data.invoice.dueDate)
+                    let now: Date = new Date()
+                    if (data.invoice.dueDate < now) {
+                        return of( warnDue(), getInvoice.success({user: action.payload.user, inv: data.invoice, id: action.payload.id}) )
+                    } else {
+                        return of( getInvoice.success({user: action.payload.user, inv: data.invoice, id: action.payload.id}) )
+                    }
+
                 }
             ),
             catchError(
@@ -41,23 +48,40 @@ const editcr8 = createAction('@@invoicedet/TO_EDITCR8',
     }
 )()
 
-const setInv = createAction('@@editcr8inv/SET_INV',
+const warnDue = createAction('@@invoicedet/WARN_DUE',
+    () => (
+        {error: "This invoice is due!", errOpen: true}
+    )
+)()
+
+const setInv = createAction('@@invoicedet/SET_INV',
     (inv: Invoice, id: string, usr: User) => {
-        return {inv, id, usr}
+        let now: Date = new Date()
+        if (inv.dueDate < now) {
+            return {inv, id, usr, error: "This invoice is due!", errOpen: true}
+        } else {
+            return {inv, id, usr}
+        }
     }
 )()
 
-
-
-
-
-
+const handleCloseErr = createAction('@@invoicedet/CLOSE_ERR_SNACKBAR',
+    (e: any, reason?: string) => {
+        if(reason === 'clickaway') {
+            return { errOpen: false, error: "" }
+        } else {
+            return { errOpen: false, error: "" }
+        }
+    } 
+)()
 
 
 const invoiceDetActions = {
     editcr8,
     getInvoice,
-    setInv
+    setInv,
+    handleCloseErr,
+    warnDue
 }
 
 export { invoiceDetActions as InvoiceDetAction }

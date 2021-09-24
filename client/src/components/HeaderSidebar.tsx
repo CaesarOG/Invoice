@@ -48,6 +48,7 @@ const typesIcons: { [key: string]: JSX.Element } = {
   offer: <TicketIcon />,
   info: <ThumbUpIcon />,
   message: <MessageIcon />,
+  notification: <MessageIcon />,
   feedback: <FeedbackIcon />,
   customer: <CustomerIcon />,
   shipped: <ShippedIcon />,
@@ -62,7 +63,7 @@ const getIconByType = (type = "offer") => typesIcons[type];
 
 type ntProps = Partial<{
   extraButton: boolean, extraButtonClick: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void, theme: Theme,
-  variant: 'contained' | "rounded", typographyVariant: Variant, className: string,
+  variant: 'contained' | "rounded", typographyVariant: Variant, className: string, message: string,
   color: "primary" | "secondary" | "error", type: string, shadowless: boolean
 } & WithStyles<typeof ntStyles>>;
 
@@ -158,7 +159,7 @@ const notif: React.FC<ntProps> = ({ classes, theme, variant, ...props }: ntProps
         })}
           variant={props.typographyVariant} size={(variant !== "contained" && !props.typographyVariant) ? "md" : undefined}
         >
-
+          {props.message!}
         </Typography>
       </div>
     </div>
@@ -166,38 +167,6 @@ const notif: React.FC<ntProps> = ({ classes, theme, variant, ...props }: ntProps
 }
 
 const Notification = withStyles(ntStyles, { withTheme: true })(notif)
-
-
-// const messages: Array<{ id: number, variant: "error" | "primary" | "secondary", name: string, message: string, time: string }> = [
-//   {
-//     id: 0,
-//     variant: "error",
-//     name: "Jane Hew",
-//     message: "Hey! How is it going?",
-//     time: "9:32"
-//   },
-//   {
-//     id: 1,
-//     variant: "primary",
-//     name: "Lloyd Brown",
-//     message: "Check out my new Dashboard",
-//     time: "9:18"
-//   },
-//   {
-//     id: 2,
-//     variant: "primary",
-//     name: "Mark Winstein",
-//     message: "I want rearrange the appointment",
-//     time: "9:15"
-//   },
-//   {
-//     id: 3,
-//     variant: "secondary",
-//     name: "Liana Dutti",
-//     message: "Good news from sale department",
-//     time: "9:09"
-//   }
-// ];
 
 
 const mapStateToPropsH: MapStateToProps<HeaderState, {}, RootState> = (state: RootState) => ({
@@ -328,7 +297,6 @@ class Header extends React.Component<PropsH, {}> {
         </DialogContent>
         <DialogActions>
           <Button onClick={ (e) => { closeDialog(e) }} color="primary">OK</Button>
-          <Button onClick={undefined} color="primary">Later</Button>
           </DialogActions>
       </Dialog>
         <Snackbar anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} open={errOpen} autoHideDuration={6000} onClose={handleCloseErr} 

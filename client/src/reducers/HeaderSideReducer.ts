@@ -15,13 +15,13 @@ export interface HeaderState {
     ntfnModalOpen: {[x:string]: boolean}
     error: string
     errOpen: boolean
-    notifications?: Notification[]
+    notifications: Notification[]
     dues: boolean
 }
 
 export const hDinitialState: HeaderState = {
     isSearchOpen: false, isMailsUnread: false, isNotificationsUnread: false, notificationsMenu: null, 
-    profileMenu: null, signedIn: false, user: new User(),
+    profileMenu: null, signedIn: false, user: new User(), notifications: [],
     ntfnModalOpen: {"FundNtfn": false, "CmpyReturn": false}, error: "", errOpen: false, dues: false
 }
 
@@ -42,8 +42,18 @@ const hDReducer: Reducer<HeaderState, HeaderAction> = (state: HeaderState = hDin
             
         case getType(HeaderAction.setUserSigned):
             return {
-                ...state, signedIn: action.payload.signedIn, notifications: action.payload.notifs,
-                    user: action.payload.user
+                ...state, signedIn: action.payload.signedIn, user: action.payload.user
+            }
+        
+        case getType(HeaderAction.custNotifs):
+
+            setTimeout(() => { console.log('') }, 100);
+            if (action.payload.role === 'Customer') {
+                return {
+                    ...state, notifications: action.payload.notifs, dues: action.payload.notifs.length !== 0 ? true:false
+                }
+            } else {
+                return state
             }
 
         case getType(HeaderAction.goInvoice):
@@ -79,7 +89,7 @@ const hDReducer: Reducer<HeaderState, HeaderAction> = (state: HeaderState = hDin
 
         case getType(HeaderAction.closeDialog):
             return {
-                ...state
+                ...state, dues: false
             }
 
         default: 

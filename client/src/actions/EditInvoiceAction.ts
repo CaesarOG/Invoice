@@ -35,7 +35,7 @@ action$.pipe(
                 } 
             )
         ):
-        from( api.invoice.changelineitems(action.payload.invoice!, action.payload.id!, action.payload.materials, action.payload.materialsChecked, action.payload.stringtoMats) ).pipe(
+        from( api.invoice.changelineitems(action.payload, state$.value.EditInvoiceReducer) ).pipe(
             mergeMap(
                 (data: editcr8Succ) => {
                     return of( editOrCreateInv.success(data))
@@ -96,11 +96,17 @@ const addNote = createAction('@@editcr8inv/ADD_NOTE',
 )()
 
 const setInv = createAction('@@editcr8inv/SET_INV',
-    (inv: Invoice, usr: User) => {
-        if (inv.notes.length !== 0) {
-            return { notes: inv.notes, inv, usr}
+    (inv: Invoice, usr: User, edCr8: string) => {
+        if(edCr8 === "Edit") {
+            let vals: {name: string, description: string, billableHrs: number, wageRate: number, 
+                supplyCost: number} = {...inv}
+            let materialsChecked: string[] = []
+            inv.materials.forEach(m => materialsChecked.push(m.name!))
+            return {inv, usr, edCr8, vals, materialsChecked}
+        } 
+        else { 
+            return {inv, usr, edCr8}
         }
-        return {inv, usr}
     }
 )()
 

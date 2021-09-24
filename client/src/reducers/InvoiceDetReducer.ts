@@ -8,10 +8,12 @@ export interface InvoiceDetState {
     invoice: Invoice
     user: User
     id: string
+    error: string
+    errOpen: boolean
 }
 
 export const invcDetInitialState: InvoiceDetState = {
-    invoice: new Invoice(), user: new User(), id: ""
+    invoice: new Invoice(), user: new User(), id: "", error: "", errOpen: false
 }
 
 type InvoiceDetAction = ActionType<typeof InvoiceDetAction>;
@@ -26,14 +28,34 @@ const invDetReducer: Reducer<InvoiceDetState, InvoiceDetAction> = (state: Invoic
             return {
                 ...state, ...(action.payload), invoice: action.payload.inv!
             }
+
         case getType(InvoiceDetAction.getInvoice.failure):
             return {
                 ...state, ...(action.payload)
             }
+
         case getType(InvoiceDetAction.setInv):
-            return {
-                ...state, user: action.payload.usr, id: action.payload.id, invoice: action.payload.inv
+            if (action.payload.error) { //NOT REAL ERROR, DUE DATE!
+                return {
+                    ...state, user: action.payload.usr, id: action.payload.id, invoice: action.payload.inv,
+                    error: action.payload.error, errOpen: action.payload.errOpen
+                }
+            } else {
+                return {
+                    ...state, user: action.payload.usr, id: action.payload.id, invoice: action.payload.inv
+                }
             }
+
+        case getType(InvoiceDetAction.handleCloseErr):
+            return {
+                ...state, errOpen: action.payload.errOpen, error: action.payload.error
+            }
+        
+        case getType(InvoiceDetAction.warnDue):
+            return {
+                ...state, errOpen: action.payload.errOpen, error: action.payload.error
+            }
+
         default:
             return state
     }

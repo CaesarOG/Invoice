@@ -1,7 +1,7 @@
 import { createAction } from 'typesafe-actions'
 import { Theme } from '@material-ui/core';
 import services from './services'
-import { User, Notification } from './services/models'
+import { User, Notification, Invoice } from './services/models'
 import React from 'react';
 
 
@@ -44,15 +44,21 @@ const setUserSigned = createAction('@@header/SET_SIGNED_IN',
     (usr: User) => {
         const user = usr?usr:services.localStorage.loadItem<User>('user')
         const signedIn = Boolean(user)
+        
+
+        return {user, signedIn}
+    }
+)()
+
+const custNotifs = createAction("@@header/CUST_NOTIFS",
+    (invoices: Invoice[], user: User) => {
         const now = new Date()
 
         let notifs: Notification[] = []
-        if (user.role === 'Customer' && user.custInvoices && user.custInvoices.length > 0) {
-            user.custInvoices.forEach(inv => inv.dueDate < now ? notifs.push({message: 'Invoice '+inv.name+' is due!'}):null)
+        if (user.role === 'Customer') {
+            invoices.forEach(inv => new Date(inv.dueDate) < now ? notifs.push({message: 'Invoice '+inv.name+' is due!', ID: inv.ID}):null)
         }
-        
-
-        return {notifs, user, signedIn}
+        return {role: user.role, notifs}
     }
 )()
 
@@ -130,6 +136,7 @@ const headerActions = {
     logout,
     goHome,
     openNotifsMenu,
+    custNotifs,
     closeNotificationsMenu,
     goInvoice,
     openProfileMenu,

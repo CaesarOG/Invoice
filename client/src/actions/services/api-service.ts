@@ -1,6 +1,6 @@
 import { EditInvoiceState } from '../../reducers/EditInvoiceReducer'
 import { Res, PostOptions, Login, Register, invListSucc, invListReq, User, GetOptions,
-    FrgnField, Invoice, editcr8Succ, getFormSucc, obj, editcr8Req } from './models'
+    Invoice, editcr8Succ, getFormSucc, editcr8Req } from './models'
 
 var postOptions = new PostOptions()
 var getOptions = new GetOptions()
@@ -65,8 +65,8 @@ const invoice = {
         let inv: Invoice = new Invoice()
         materialsChecked.forEach(m => inv.materials.push(materials[stringtoMats[m]]))
         let { name, description, billableHrs, wageRate, supplyCost, custEmails, custEmail, invoice } = edcr8Red
-        inv.name = name; inv.description = description; inv.billableHrs = parseFloat(billableHrs); inv.wageRate = parseFloat(wageRate);
-        inv.supplyCost = parseFloat(supplyCost); inv.notes = invoice.notes; inv.custEmail = custEmail; inv.contrEmail = edcr8Red.user.email;
+        inv.name = name; inv.description = description; inv.billableHrs = parseFloat(billableHrs.toString()); inv.wageRate = parseFloat(wageRate.toString());
+        inv.supplyCost = parseFloat(supplyCost.toString()); inv.notes = invoice.notes; inv.custEmail = custEmail; inv.contrEmail = edcr8Red.user.email;
         inv.contrID = edcr8Red.user.ID
         custEmails.forEach(c => c.email === custEmail?inv.custID=c.id:null)
         postOptions.body = JSON.stringify(inv)
@@ -105,15 +105,15 @@ const invoice = {
         });
     },
 
-    changelineitems: (inv: Invoice, id: string,  materials: FrgnField[], materialsChecked: string[], stringtoMats: obj): Promise<editcr8Succ> => {
+    changelineitems: ({materials, materialsChecked, stringtoMats}: editcr8Req, edcr8Red: EditInvoiceState): Promise<editcr8Succ> => {
         return new Promise( (resolve: (value: editcr8Succ | PromiseLike<editcr8Succ>) => void, reject: (err: Res) => void) => {
-            var dat: obj = {'a': 1}
-            inv.materials = []
-            materialsChecked.forEach(m => inv.materials.push(materials[stringtoMats[m]]))
-            dat.name = inv.name; dat.description = inv.description; dat.billableHrs = inv.billableHrs; dat.wageRate = inv.wageRate;
-            dat.supplyCost = inv.supplyCost; dat.materials = inv.materials; dat.notes = inv.notes
-            postOptions.body = JSON.stringify(dat)
-            fetch(`${serverURL}/api/invc/change/${id}`, postOptions)
+            let { name, description, billableHrs, wageRate, supplyCost, invoice } = edcr8Red
+            invoice.materials = []
+            materialsChecked.forEach(m => invoice.materials.push(materials[stringtoMats[m]]))
+            invoice.name = name; invoice.description = description; invoice.billableHrs = parseFloat(billableHrs.toString()); invoice.wageRate = parseFloat(wageRate.toString());
+            invoice.supplyCost = parseFloat(supplyCost.toString());
+            postOptions.body = JSON.stringify(invoice)
+            fetch(`${serverURL}/api/invc/change/${invoice.ID!}`, postOptions)
             .then( response => {
                 handleResponse(response).then( data => {
                     resolve(data as editcr8Succ)

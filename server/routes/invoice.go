@@ -39,12 +39,12 @@ func GetManyInvoices(ctx *fasthttp.RequestCtx) {
 			var filteredInvcs *gorm.DB
 			if onlyLate := string(ctx.Request.Header.Peek("OnlyLate")); onlyLate != "" {
 				filteredInvcs = models.GetDB().Model(&models.Invoice{}).
-					Joins(`JOIN invoice_materials on invoice.id = invoice_materials.invoice_id JOIN material on material.id = invoice_materials.material_id 
+					Joins(`JOIN invoice_material on invoice.id = invoice_material.invoice_id JOIN material on material.id = invoice_material.material_id 
 				JOIN note on note.invoice_id = invoice.id`).
 					Where(`(invoice.name ILIKE ? OR invoice.description ILIKE ? OR invoice.cust_email ILIKE ? OR invoice.contr_email ILIKE ? OR material.name ILIKE ? OR note.message ILIKE ?) AND invoice.status = ?`, query, query, query, query, query, query, "Late")
 			} else {
 				filteredInvcs = models.GetDB().Model(&models.Invoice{}).
-					Joins(`JOIN invoice_materials on invoice.id = invoice_materials.invoice_id JOIN material on materials.id = invoice_materials.material_id 
+					Joins(`JOIN invoice_material on invoice.id = invoice_material.invoice_id JOIN material on material.id = invoice_material.material_id 
 				JOIN note on note.invoice_id = invoice.id`).
 					Where(`invoice.name ILIKE ? OR invoice.description ILIKE ? OR invoice.cust_email ILIKE ? OR invoice.contr_email ILIKE ? OR material.name ILIKE ? OR note.message ILIKE ?`, query, query, query, query, query, query)
 			}
@@ -77,12 +77,12 @@ func GetManyInvoices(ctx *fasthttp.RequestCtx) {
 			var filteredInvcs *gorm.DB
 			if onlyLate := string(ctx.Request.Header.Peek("OnlyLate")); onlyLate != "" {
 				filteredInvcs = models.GetDB().Model(&models.Invoice{}).
-					Joins(`JOIN invoice_materials on invoice.id = invoice_materials.invoice_id JOIN material on material.id = invoice_materials.material_id 
+					Joins(`JOIN invoice_material on invoice.id = invoice_material.invoice_id JOIN material on material.id = invoice_material.material_id 
 				JOIN note on note.invoice_id = invoice.id`).
 					Where(`invoice.`+idStr+`_id = ? AND (invoice.name ILIKE ? OR invoice.description ILIKE ? OR invoice.cust_email ILIKE ? OR invoice.contr_email ILIKE ? OR material.name ILIKE ? OR note.message ILIKE ?) AND invoice.status = ?`, UserID, query, query, query, query, query, query, "Late")
 			} else {
 				filteredInvcs = models.GetDB().Model(&models.Invoice{}).
-					Joins(`JOIN invoice_materials on invoice.id = invoice_materials.invoice_id JOIN material on material.id = invoice_materials.material_id 
+					Joins(`JOIN invoice_material on invoice.id = invoice_material.invoice_id JOIN material on material.id = invoice_material.material_id 
 				JOIN note on note.invoice_id = invoice.id`).
 					Where(`invoice.`+idStr+`_id = ? AND (invoice.name ILIKE ? OR invoice.description ILIKE ? OR invoice.cust_email ILIKE ? OR invoice.contr_email ILIKE ? OR material.name ILIKE ? OR note.message ILIKE ?)`, UserID, query, query, query, query, query, query)
 			}
@@ -136,43 +136,21 @@ func CreateInvoice(ctx *fasthttp.RequestCtx) {
 }
 
 func ChangeLineItems(ctx *fasthttp.RequestCtx) {
-	type invChange struct {
-		Name          string            `json:"firmName"`
-		Description   string            `json:"angelOrFirm"`
-		BillableHours float64           `json:"billableHrs"`
-		WageRate      float64           `json:"wageRate"`
-		SupplyCost    float64           `json:"supplyCost"`
-		Materials     []models.Material `json:"materials"`
-		Notes         []models.Note     `json:"notes"`
-	}
 	ID, _ := uuid.FromString(ctx.UserValue("ID").(string))
 
-	reqInv := invChange{}
+	inv := &models.Invoice{}
 	body := ctx.Request.Body()
-	errJ := json.NewDecoder(bytes.NewReader(body)).Decode(&reqInv)
-	if errJ != nil {
-		middleware.ResponseMaker(ctx, fasthttp.StatusBadRequest, false, errJ.Error(), "noData")
-		return
-	}
-
-	inv := models.Invoice{}
-	err := models.GetDB().Table("invoice").Where("id = ?", (&ID).String()).First(&inv).Error
+	err := json.NewDecoder(bytes.NewReader(body)).Decode(inv)
 	if err != nil {
-		middleware.ResponseMaker(ctx, fasthttp.StatusInternalServerError, false, "Connection Error.", "noData")
+		middleware.ResponseMaker(ctx, fasthttp.StatusBadRequest, false, err.Error(), "noData")
 		return
 	}
 
-	inv.Name = reqInv.Name
-	inv.Description = reqInv.Description
-	inv.BillableHours = reqInv.BillableHours
-	inv.WageRate = reqInv.WageRate
-	inv.SupplyCost = reqInv.SupplyCost
+	models.GetDB().Model(&inv).Association("Materials").Delete()
+	models.GetDB().Model(&inv).Association("Notes").Delete()
+	models.GetDB().Unscoped().Delete(&models.Note{}, "invoice_id = ?", (&ID).String()) //could have also done where and delete Note
 
-	models.GetDB().Model(&inv).Association("Materials").Delete().Append(reqInv.Materials)
-	models.GetDB().Delete(&models.Note{}, "invoice_id = ?", (&ID).String()) //could have also done where and delete Note
-	models.GetDB().Model(&inv).Association("Notes").Delete().Append(reqInv.Notes)
-
-	errS := models.GetDB().Save(&inv).Error
+	errS := models.GetDB().Save(inv).Error
 	if errS != nil {
 		middleware.ResponseMaker(ctx, fasthttp.StatusInternalServerError, false, "Error While Saving Invoice.", "noData")
 		return
@@ -187,7 +165,7 @@ func GetInvoice(ctx *fasthttp.RequestCtx) {
 	ID, _ := uuid.FromString(ctx.UserValue("ID").(string))
 
 	inv := &models.Invoice{}
-	err := models.GetDB().Table("invoice").Where("id = ?", ID).Preload("Materials").Preload("Notes").Find(inv)
+	err := models.GetDB().Table("invoice").Where("id = ?", (&ID).String()).Preload("Materials").Preload("Notes").Find(inv).Error
 	if err != nil {
 		middleware.ResponseMaker(ctx, fasthttp.StatusInternalServerError, false, "Error Getting Invoice.", "noData")
 		return

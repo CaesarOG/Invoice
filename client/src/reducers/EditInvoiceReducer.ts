@@ -7,9 +7,9 @@ import { history } from '../App'
 export interface EditInvoiceState {
     name: string
     description: string
-    billableHrs: string
-    wageRate: string
-    supplyCost: string
+    billableHrs: number
+    wageRate: number
+    supplyCost: number
     status: string
     materials: FrgnField[]
     custEmails: {email: string, id: string}[]
@@ -27,7 +27,7 @@ export interface EditInvoiceState {
 }
 
 export const editInvinitialState: EditInvoiceState = {
-    name: "", description: "", billableHrs: '0.5', wageRate: '0.0', supplyCost: '0.0', status: 'Ready', materials: [], notes: [], materialsChecked: [],
+    name: "", description: "", billableHrs: 0.5, wageRate: 0.0, supplyCost: 0.0, status: 'Ready', materials: [], notes: [], materialsChecked: [],
     editOrCreate: "Create", error: "", errOpen: false, note: "", user: new User(), custEmails: [], stringtoMats: {}, custEmail: "",
     invoice: new Invoice()
 }
@@ -44,14 +44,15 @@ const editInvReducer: Reducer<EditInvoiceState, EditInvoiceAction> = (state: Edi
             }
 
         case getType(EditInvoiceAction.setInv):
-            console.log(action.payload.inv)
-            if(action.payload.notes) {
+            if(action.payload.edCr8 === "Edit") {
                 return {
-                    ...state, invoice: action.payload.inv, notes: action.payload.notes, user: action.payload.usr
+                    ...state, invoice: action.payload.inv, user: action.payload.usr, editOrCreate: action.payload.edCr8, 
+                    ...(action.payload.vals!), materialsChecked: action.payload.materialsChecked!
                 }
-            } else {
+            }
+            else {
                 return {
-                    ...state, invoice: action.payload.inv, user: action.payload.usr
+                    ...state, invoice: action.payload.inv, user: action.payload.usr, editOrCreate: action.payload.edCr8
                 }
             }
 
