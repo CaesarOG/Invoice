@@ -57,7 +57,7 @@ const handleChange = createAction('@@register/PROP_CHANGE',
     }
 )()
 
-const handleChangeSwitch = createAction('@@founderfunder/SWITCH_CHANGE',
+const handleChangeSwitch = createAction('@@register/SWITCH_CHANGE',
     (e: React.ChangeEvent<HTMLInputElement>) => {
         const {id, checked} = e.target //might need checked instead of value
         return { switchName: id, switchValue: checked }

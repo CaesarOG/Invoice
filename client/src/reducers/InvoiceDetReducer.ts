@@ -35,7 +35,7 @@ const invDetReducer: Reducer<InvoiceDetState, InvoiceDetAction> = (state: Invoic
             }
 
         case getType(InvoiceDetAction.setInv):
-            if (action.payload.error) { //NOT REAL ERROR, DUE DATE!
+            if (action.payload.error && action.payload.usr.role !== 'Admin') { //NOT REAL ERROR, DUE DATE!
                 return {
                     ...state, user: action.payload.usr, id: action.payload.id, invoice: action.payload.inv,
                     error: action.payload.error, errOpen: action.payload.errOpen

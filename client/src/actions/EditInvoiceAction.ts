@@ -116,7 +116,6 @@ const getFormItems = createAsyncAction(
     '@@editcr8inv/FORM_ITEMS_SUCCESS',
     '@@editcr8inv/FORM_ITEMS_FAILURE'
 )<{inv?: Invoice, id?: string, edCr8: string}, getFormSucc, epicErr>(); 
-//type founderorfunderFail = ActionType<typeof founderorfunder.failure>; type founderorfunderSuc = ActionType<typeof founderorfunder.success>;
 
 export const formItems: Epic<RootAction, RootAction, RootState, Services> = (
 action$, state$, 

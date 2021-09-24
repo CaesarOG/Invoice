@@ -14,7 +14,6 @@ import (
 	"github.com/valyala/fasthttp"
 )
 
-//GetManyFirms full list or query, paginated
 func GetManyInvoices(ctx *fasthttp.RequestCtx) {
 	invcs := []models.Invoice{}
 	var offset int

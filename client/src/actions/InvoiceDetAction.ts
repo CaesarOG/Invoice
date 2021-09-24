@@ -10,7 +10,6 @@ const getInvoice = createAsyncAction(
     '@@invoicedet/GET_INV_SUCCESS',
     '@@invoicedet/GET_INV_FAILURE'
 )<getInvModel, getInvModel, epicErr>(); 
-//type founderorfunderFail = ActionType<typeof founderorfunder.failure>; type founderorfunderSuc = ActionType<typeof founderorfunder.success>;
 
 export const getInv: Epic<RootAction, RootAction, RootState, Services> = (
 action$, state$, 
@@ -24,7 +23,7 @@ action$.pipe(
                 (data: {invoice: Invoice}) => {
                     data.invoice.dueDate = new Date(data.invoice.dueDate)
                     let now: Date = new Date()
-                    if (data.invoice.dueDate < now) {
+                    if (data.invoice.dueDate < now && action.payload.user.role !== 'Admin') {
                         return of( warnDue(), getInvoice.success({user: action.payload.user, inv: data.invoice, id: action.payload.id}) )
                     } else {
                         return of( getInvoice.success({user: action.payload.user, inv: data.invoice, id: action.payload.id}) )

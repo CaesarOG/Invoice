@@ -30,11 +30,6 @@ const logout = createAction('@@header/LOGOUT',
 
         localStorage.removeItem('token')
         localStorage.removeItem('user')
-        localStorage.removeItem('founder')
-        localStorage.removeItem('funder')
-        localStorage.removeItem('statesChecked')
-        localStorage.removeItem('industriesChecked')
-        localStorage.removeItem('fundRngsChecked')
 
         return { signedIn: false };
     }

@@ -12,7 +12,6 @@ export interface HeaderState {
     notificationsMenu: any
     profileMenu: any
     user: User,
-    ntfnModalOpen: {[x:string]: boolean}
     error: string
     errOpen: boolean
     notifications: Notification[]
@@ -21,8 +20,7 @@ export interface HeaderState {
 
 export const hDinitialState: HeaderState = {
     isSearchOpen: false, isMailsUnread: false, isNotificationsUnread: false, notificationsMenu: null, 
-    profileMenu: null, signedIn: false, user: new User(), notifications: [],
-    ntfnModalOpen: {"FundNtfn": false, "CmpyReturn": false}, error: "", errOpen: false, dues: false
+    profileMenu: null, signedIn: false, user: new User(), notifications: [], error: "", errOpen: false, dues: false
 }
 
 type HeaderAction = ActionType<typeof HeaderAction>;

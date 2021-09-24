@@ -11,8 +11,7 @@ const doSign = createAsyncAction(
     '@@signin/SIGNIN_SUCCESS',
     '@@signin/SIGNIN_FAILURE'
 )<signReq, signSucc, epicErr>();
-//type founderorfunderFail = ActionType<typeof founderorfunder.failure>; type founderorfunderSuc = ActionType<typeof founderorfunder.success>; 
-//destructure param deep ({payload: {industriesChecked, statesChecked, funder}}: {payload: updFunderReq}) => {}
+
 export const signin: Epic<RootAction, RootAction, RootState, Services> = (
 action$, state$, 
 { logger, localStorage, api }

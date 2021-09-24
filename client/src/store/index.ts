@@ -37,15 +37,6 @@ const initialState: RootState = {
   InvoiceDetReducer: invcDetInitialState
 }
 
-// const initialState = {
-//   SignInReducer: {email: "", password: "", error: "", user: {}, errOpen: false},
-//   RegisterReducer: {name: "", email: "", password: "", confirmPassword: "", error: "", user: {}, errOpen: false},
-//   SignUpReducer: {activeStep: 0},
-//   FounderOrFunderReducer: {founderBool: false, funderBool: false, errTicker: "", errTickerOpen: false, greens: true, errOpen: false, error: "", ticker: "", companyName: "", industries: [], states: [], industriesChecked: [], statesChecked: [] },
-//   FounderHomeReducer: {founder: {}, anchorEl: null, error: "", url: "", source: "", message: "", errOpen: false, msgOpen: false, hashFinished: {"gaa": false} },
-//   FunderHomeReducer: {funder: {}, anchorEl: null, msgOpen: false, message: "", error: "", errOpen: false, industries: [], states: [], industriesChecked: [], statesChecked: [] }
-// }
-
 const store = createStore(rootReducer, initialState, composeEnhancers );
 
 epicMiddleware.run(rootEpic);

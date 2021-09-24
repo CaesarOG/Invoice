@@ -71,7 +71,7 @@ func Login(ctx *fasthttp.RequestCtx) {
 
 //Register handler
 func Register(ctx *fasthttp.RequestCtx) {
-	//TODO register refactor since industry and state will become foreign key in company
+
 	type userReq struct {
 		Email     string `json:"email"`
 		Password  string `json:"password"`
@@ -84,9 +84,6 @@ func Register(ctx *fasthttp.RequestCtx) {
 	errJ := json.NewDecoder(bytes.NewReader(body)).Decode(userAttempt)
 	user := models.Usertype{FirstName: userAttempt.FirstName, LastName: userAttempt.LastName, Email: userAttempt.Email, Password: userAttempt.Password,
 		FullName: userAttempt.FirstName + " " + userAttempt.LastName, Role: userAttempt.Role}
-
-	//errJ := json.Unmarshal(body, user)
-	// passStore := user.Password //keep actual val for knack create
 
 	if errJ != nil {
 		middleware.ResponseMaker(ctx, fasthttp.StatusBadRequest, false, "Invalid/Missing Register Info.", "noData")
@@ -105,7 +102,7 @@ func Register(ctx *fasthttp.RequestCtx) {
 		return
 	}
 
-	//All good, register user. Need to add knack here to make a user/founder object over there. Just email and password for now.
+	//All good, register user.
 	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	user.Password = string(hashedPassword)
 

@@ -48,12 +48,12 @@ type Note struct {
 // 	- get all invoices
 // 	- add line items incl. notes
 
-client epics for:
-	- email
-	- all routes (option filter for late in getall)
+// client epics for:
+// 	- email
+// 	- all routes (option filter for late in getall)
 
-client alert:
-	- due date is passed(so, late)
+// client alert:
+// 	- due date is passed(so, late)
 
 // client login & register:
 // 	- just do it YYST SHIA
