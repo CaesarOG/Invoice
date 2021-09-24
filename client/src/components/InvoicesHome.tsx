@@ -2,14 +2,14 @@ import React from 'react'
 import { connect, MapStateToProps } from 'react-redux' //MapDispatchToProps
 import { ActionType } from 'typesafe-actions'
 import { RootState } from 'MyTypes'
-import { Theme, withStyles, Grid, createStyles, WithStyles, Button } from '@material-ui/core';
+import { Theme, withStyles, Grid, createStyles, WithStyles, Button, Snackbar,Slide } from '@material-ui/core';
 import { InvoicesHomeAction } from '../actions' 
 import { InvoicesHomeState } from '../reducers/InvoicesHomeReducer'
 import services from '../actions/services'
 import { User, obj } from '../actions/services/models';
 import { RouteComponentProps } from 'react-router';
 import MUIDataTable from 'mui-datatables'
-
+import MySnackbarContent from './MySnackbarContent'
 
 //before it was a function that manually said return and the object
 const mapStateToProps: MapStateToProps<InvoicesHomeState, {}, RootState> = (state: RootState) => ({
@@ -25,7 +25,8 @@ const mapDispatchToProps = {
   invcChangePage: InvoicesHomeAction.getManyInvoices.request,
   setUser: InvoicesHomeAction.setUser,
   updSearchTxt: InvoicesHomeAction.updSearchTxt,
-  createInv: InvoicesHomeAction.createInv
+  createInv: InvoicesHomeAction.createInv,
+  handleCloseErr: InvoicesHomeAction.handleCloseErr
 }
 type StateProps = ReturnType<typeof mapStateToProps>; 
 type DispatchProps = typeof mapDispatchToProps;
@@ -42,42 +43,52 @@ class InvoicesHome extends React.Component<Props, {}> {
 
 
   render() {
-    const { classes, list, count, currentPage, searchText, limit, createInv,
-    updSearchTxt, invcSearchChange, invcChangePage, invcChangeRowsPerPage, invclickRow, user } = this.props
+    const { classes, list, count, currentPage, searchText, limit, createInv, error, errOpen, handleCloseErr,
+    updSearchTxt, invcSearchChange, invcChangeRowsPerPage, invclickRow, user } = this.props
 
     return ( 
       <div className={classes.root}>
         <React.Fragment>
         <Grid container spacing={5}>
+          { (user.role && user.role === 'Contractor') &&
           <Grid item xs={12}>
-            <MUIDataTable title="All Invoices" data={list} columns={[ {name: 'ID', options: {display: "excluded"}}, {name: "description", label: "Description"}, 
+            <Button variant="contained" color="primary" onClick={(e) => createInv(e, user)} 
+              className={classes.button}> Create Invoice </Button>
+          </Grid>
+          }
+          <Grid item xs={12}>
+            <MUIDataTable title="All Invoices" data={list} columns={[ {name: 'ID', options: {display: "excluded"}}, {name: "name", label: "Name"}, {name: "description", label: "Description"}, 
               {name: "custEmail", label: "Cust. Email"}, {name: "contrEmail", label: 'Contr. Email'} ]}
               options={{ 
                 page: currentPage,
                 count: count,
                 serverSide: true,
+                rowsPerPage: 30,
                 searchText,
                 selectableRows: 'none',
                 filterType: "dropdown" as any, responsive: 'scroll' as any, download: false, print: false, onRowClick: (rowData, rowMeta) => { invclickRow(rowData, rowMeta, user) },
                 onSearchChange: (query: string|null) => { updSearchTxt(query!); invcSearchChange({query: query!, offset: 0, limit, place: "search", user }) },
-                onChangePage: (currentmeaningjustnew: number) => currentmeaningjustnew < currentPage ? undefined : 
-                invcChangePage({offset: currentmeaningjustnew*limit, limit, place: "page", user: user}), /*onchangepage delivers current as the just changed to page*/
+                // onChangePage: (currentmeaningjustnew: number) => currentmeaningjustnew < currentPage ? undefined : 
+                // invcChangePage({offset: currentmeaningjustnew*limit, limit, place: "page", user: user}), /*onchangepage delivers current as the just changed to page*/
                 onChangeRowsPerPage: (numRows: number) => invcChangeRowsPerPage({offset: (currentPage-1)*limit, limit: numRows, place: "rows", user}), 
                 onSearchClose: () => invcSearchChange({query: '', offset: 0, limit, place: "sClose", user}) /*if query empty or if search close and then so query empty, reg pagin */
               }} 
             />
           </Grid>
-          { (user.role && user.role === 'Contractor') &&
-          <Grid item xs={12}>
-            <Button variant="contained" color="primary" onClick={createInv} 
-              className={classes.button}> Create Invoice </Button>
-          </Grid>
-          }
         </Grid>
       </React.Fragment>
+      <Snackbar anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} open={errOpen} autoHideDuration={6000} onClose={handleCloseErr}
+          TransitionComponent={TransitionRight}
+        >
+          <MySnackbarContent variant="error" message={error} className={classes.margin} onClose={handleCloseErr} />
+        </Snackbar>
       </div>
     );
   }
+}
+
+function TransitionRight(props: any) { //ComponentProps in react?
+  return <Slide {...props} direction="right" />;
 }
 
 const styles = (theme: Theme) => createStyles({

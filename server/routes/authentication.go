@@ -3,7 +3,6 @@ package routes
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"os"
 
 	"server/middleware"
@@ -60,11 +59,6 @@ func Login(ctx *fasthttp.RequestCtx) {
 	tk := &middleware.Token{UserID: *user.ID}
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
 	tokenString, _ := token.SignedString([]byte(os.Getenv("token_password")))
-
-	//user.Logs = nil
-	fmt.Println(user)
-	//user = cleanTokens(user)
-	fmt.Println(user)
 
 	data := map[string]interface{}{}
 

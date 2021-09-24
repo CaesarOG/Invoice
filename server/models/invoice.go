@@ -19,9 +19,9 @@ type Invoice struct {
 	ContrEmail    string      `json:"contrEmail"`
 	Description   string      `json:"description"`
 	BillableHours float64     `json:"billableHrs"`
-	WageRate      float64     `json:"WageRate"`
+	WageRate      float64     `json:"wageRate"`
 	SupplyCost    float64     `json:"supplyCost"`
-	Materials     []*Material `json:"materials" gorm:"many2many:invoice_materials;"`
+	Materials     []*Material `json:"materials" gorm:"many2many:invoice_material;"`
 	Notes         []Note      `json:"notes"`
 	Status        string      `json:"status"`
 	DueDate       time.Time   `json:"dueDate"`
@@ -31,7 +31,7 @@ type Invoice struct {
 type Material struct {
 	gorm.Model
 	Name    string     `json:"name"`
-	Invoice []*Invoice `json:"invoices" gorm:"many2many:invoice_materials;"`
+	Invoice []*Invoice `json:"invoices" gorm:"many2many:invoice_material;"`
 }
 
 type Note struct {

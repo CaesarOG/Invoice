@@ -3,7 +3,7 @@ import { connect, MapStateToProps } from 'react-redux' //MapDispatchToProps
 import { ActionType } from 'typesafe-actions'
 import { RootState } from 'MyTypes'
 import { Grid, Theme, withStyles, createStyles, WithStyles, List, ListItem, ListItemAvatar, ListItemText,
-Avatar, Divider, Button } from '@material-ui/core';
+Avatar, Divider, Button, Typography as TypogCore } from '@material-ui/core';
 import { ResponsiveContainer } from 'recharts';
 import { InvoiceDetAction } from '../actions'
 import { obj } from '../actions/services/models'
@@ -21,6 +21,7 @@ type InvoiceDetAction = ActionType<typeof InvoiceDetAction>;
 const mapDispatchToProps = {
   getInvc: InvoiceDetAction.getInvoice.request,
   clickEdit: InvoiceDetAction.editcr8,
+  setInv: InvoiceDetAction.setInv
 }
 
 type StateProps = ReturnType<typeof mapStateToProps>; 
@@ -32,11 +33,11 @@ class InvoiceDet extends React.Component<Props, {}> {
 
   componentDidMount() {//https://tylermcginnis.com/react-router-query-strings/
     const id = this.props.match.params.id as string
-    let invoice = (this.props.location.state! as obj) && (this.props.location.state! as obj).invoice
+    let invoice = (this.props.location.state! as obj) && (this.props.location.state! as obj).inv
     let user = (this.props.location.state! as obj) && (this.props.location.state! as obj).user
-    if (invoice.name && invoice.name !== "") {
+    if (!invoice || !invoice.name) {
       this.props.getInvc({user, id})
-    } else this.props.getInvc({user, inv: invoice, id})
+    } else this.props.setInv(invoice, id, user)
   }
 
   render() {
@@ -44,11 +45,17 @@ class InvoiceDet extends React.Component<Props, {}> {
     return (
       <div className={classes.root}>
         <Grid container spacing={5} alignItems="center" direction="row" justify="space-evenly">
-          <Grid item lg={4} md={4} sm={6} xs={12}>
-            { invoice && 
-            <Widget title="Invoice Details" bodyClass={classes.fullHeightBody} className={classes.card}>
+          { (user && user.role && user.role === "Contractor") && 
+          <Grid item xs={12}>
+            <Button variant="contained" color="primary"  
+              className={classes.button}> Edit Invoice </Button>
+          </Grid>
+          }
+          <Grid item lg={6} md={6} sm={6} xs={12}>
+            { invoice &&
+            <Widget title="Invoice Descr." bodyClass={classes.fullHeightBody} className={classes.card}>
               <div className={classes.serverOverviewElement}>
-                <Typography colorBrightness="dark" variant="h5" className={classes.serverOverviewElementText}> Invoice's Name </Typography>
+                <Typography colorBrightness="dark" variant="h5" className={classes.serverOverviewElementText}> Name </Typography>
                 <div className={classes.serverOverviewElementChartWrapper}>
                   <ResponsiveContainer height={50} width="99%"> 
                     <Typography colorBrightness="dark" className={classes.serverOverviewElementText}>
@@ -66,19 +73,19 @@ class InvoiceDet extends React.Component<Props, {}> {
                 </div>
               </div>
               <div className={classes.serverOverviewElement}>
-                <Typography colorBrightness="dark" variant="h5" className={classes.serverOverviewElementText}> Due Date Month </Typography>
+                <Typography colorBrightness="dark" variant="h5" className={classes.serverOverviewElementText}> Due Date </Typography>
                 <div className={classes.serverOverviewElementChartWrapper}>
                   <ResponsiveContainer height={50} width="99%"> 
-                    <Typography colorBrightness="dark" className={classes.serverOverviewElementText}> {invoice.due.getMonth()} </Typography>
+                    <Typography colorBrightness="dark" className={classes.serverOverviewElementText}> {invoice.dueDate.toDateString()} </Typography>
                   </ResponsiveContainer>
                 </div>
               </div>
             </Widget>
             }
           </Grid>
-          <Grid item lg={4} md={4} sm={6} xs={12}>
+          <Grid item lg={6} md={6} sm={6} xs={12}>
             { invoice &&
-            <Widget title="Address and Industry" bodyClass={classes.fullHeightBody} className={classes.card}>
+            <Widget title="Financial Details" bodyClass={classes.fullHeightBody} className={classes.card}>
               <div className={classes.serverOverviewElement}>
                 <Typography colorBrightness="dark" variant="h5" className={classes.serverOverviewElementText}> Billable Hours </Typography>
                 <div className={classes.serverOverviewElementChartWrapper}>
@@ -88,7 +95,7 @@ class InvoiceDet extends React.Component<Props, {}> {
                 </div>
               </div>
               <div className={classes.serverOverviewElement}>
-                <Typography colorBrightness="dark" variant="h5" className={classes.serverOverviewElementText}> Total $ Cost </Typography>
+                <Typography colorBrightness="dark" variant="h5" className={classes.serverOverviewElementText}> Labor Cost (Hrs x Wage) </Typography>
                 <div className={classes.serverOverviewElementChartWrapper}>
                   <ResponsiveContainer height={50} width="99%"> 
                     <Typography colorBrightness="dark" className={classes.serverOverviewElementText}> $ {invoice.billableHrs * invoice.wageRate} </Typography>
@@ -99,27 +106,27 @@ class InvoiceDet extends React.Component<Props, {}> {
                 <Typography colorBrightness="dark" variant="h5" className={classes.serverOverviewElementText}> Cost of Supplies </Typography>
                 <div className={classes.serverOverviewElementChartWrapper}>
                   <ResponsiveContainer height={50} width="99%"> 
-                    <Typography colorBrightness="dark" className={classes.serverOverviewElementText}> {invoice.supplyCost} </Typography>
+                    <Typography colorBrightness="dark" className={classes.serverOverviewElementText}> $ {invoice.supplyCost} </Typography>
                   </ResponsiveContainer>
                 </div>
               </div>
             </Widget>
             }
           </Grid>
-          <Grid item lg={4} md={4} sm={6} xs={12}>
+          <Grid item lg={6} md={6} sm={6} xs={12}>
             <List > {/*sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}*/}
               {invoice.materials.map((mat, idx) => (
                 <React.Fragment>
                 <ListItem alignItems="flex-start">
                 <ListItemAvatar>
-                  <Avatar alt="Material">M</Avatar>
+                  <Avatar alt="Material">{mat.name!.slice(0,2).toUpperCase()}</Avatar>
                 </ListItemAvatar>
-                <ListItemText primary="Material" secondary = {
+                <ListItemText primary={mat.name!} secondary = {
                     <React.Fragment>
                       <Typography variant="body2">
-                        Material Name
+                        {" "}
                       </Typography>
-                      {mat.name!}
+                      {" "}
                     </React.Fragment>
                   }
                 />
@@ -129,35 +136,29 @@ class InvoiceDet extends React.Component<Props, {}> {
               )) }
             </List>
           </Grid>
-          <Grid item xs={12}>
-            <List > {/*sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}*/}
-              {invoice.notes.map((note, idx) => (
-                <React.Fragment>
-                <ListItem alignItems="flex-start">
-                <ListItemAvatar>
-                  <Avatar alt="Note">NT</Avatar>
-                </ListItemAvatar>
-                <ListItemText primary="Note on Invoice" secondary = {
-                    <React.Fragment>
-                      <Typography variant="body2">
-                        Note Name
-                      </Typography>
-                      {note.message!}
-                    </React.Fragment>
-                  }
-                />
-              </ListItem>
-              { idx !== invoice.notes.length - 1 && <Divider variant="inset" component="li" /> }
-              </React.Fragment>
-              )) }
-            </List>
+          <Grid item lg={6} md={6} sm={6} xs={12}>
+          <List > {/*sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}*/}
+            {invoice.notes.map((note, idx) => (
+              <React.Fragment>
+              <ListItem alignItems="flex-start">
+              <ListItemAvatar>
+                <Avatar alt="Note">{note.message!.slice(0, 2).toUpperCase()}</Avatar>
+              </ListItemAvatar>
+              <ListItemText primary={note.message!.split(' ').slice(0,2).join(" ")+"..."} secondary = {
+                  <React.Fragment>
+                    <TypogCore component="span" variant="body2">
+                      {note.message!}  
+                    </TypogCore>
+                    {"  "}
+                  </React.Fragment>
+                }
+              />
+            </ListItem>
+            { idx !== invoice.notes.length - 1 && <Divider variant="inset" component="li" /> }
+            </React.Fragment>
+            )) }
+                  </List>
           </Grid>
-          { (user && user.role && user.role === "Contractor") && 
-          <Grid item xs={12}>
-            <Button variant="contained" color="primary"  
-              className={classes.button}> {} </Button>
-          </Grid>
-          }
         </Grid>
       </div>
     );

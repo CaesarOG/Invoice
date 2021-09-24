@@ -32,7 +32,7 @@ type avProps = { color: "error" | "primary" | "secondary", theme: Theme, name: s
 const usrAv: React.FC<avProps> = ({ classes, theme, color = "primary", name }: avProps) => {
   const letters = name.split(" ")
     .map(word => word[0])
-    .join("");
+    .join("").toUpperCase();
 
   return (
     <div className={classes.avatar} style={{ backgroundColor: theme.palette[color].main }}>
@@ -264,7 +264,7 @@ class Header extends React.Component<PropsH, {}> {
                 <MenuI classes={{ root: classnames(classes.headerIcon, classes.headerIconCollapse) }} />
               )}
           </IconButton>
-          <Typography variant="h6" weight="medium" color="primary" className={classnames(classes.grow, classes.logotype)} > Invoice </Typography>
+          <Typography variant="h6" weight="medium" color="primary" className={classnames(classes.grow, classes.logotype)} > Invoice App </Typography>
           <div className={classnames(classes.search, { [classes.searchFocused]: isSearchOpen })} >
             <div className={classnames(classes.searchIcon, { [classes.searchIconOpened]: isSearchOpen })}
               onClick={toggleSearch}
@@ -306,6 +306,9 @@ class Header extends React.Component<PropsH, {}> {
             </MenuItem>
             <MenuItem className={classnames(classes.profileMenuItem, classes.headerMenuItem)}>
               Notifications
+            </MenuItem>
+            <MenuItem className={classnames(classes.profileMenuItem, classes.headerMenuItem)}>
+              {user.email}
             </MenuItem>
             <div className={classes.profileMenuUser} onClick={logout}>
               <Typography className={classes.profileMenuLink} color="primary">Sign Out</Typography>
@@ -707,7 +710,7 @@ class SideBar extends React.Component<PropsS, {}> {
   }
 
   structure = [
-    {id: 0, type: 'title', label: 'All Invoices'},
+    {id: 0, type: 'title', label: 'All Menu'},
     {id: 1, type: 'divider'},
     {id: 0, label: 'Invoices', link: '/', color: 'primary' as 'primary'|'secondary'|'error'},
   ];

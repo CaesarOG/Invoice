@@ -8,8 +8,6 @@ import (
 	"server/middleware"
 	"server/models"
 
-	//just for google.Endpoint
-
 	uuid "github.com/gofrs/uuid"
 	"github.com/kr/pretty"
 	"github.com/startupXchange-team/gorm"
@@ -41,19 +39,24 @@ func GetManyInvoices(ctx *fasthttp.RequestCtx) {
 			var filteredInvcs *gorm.DB
 			if onlyLate := string(ctx.Request.Header.Peek("OnlyLate")); onlyLate != "" {
 				filteredInvcs = models.GetDB().Model(&models.Invoice{}).
-					Joins(`JOIN invoice_materials on invoices.id = invoice_materials.invoice_id JOIN materials on materials.id = invoice_materials.material_id 
-				JOIN notes on notes.invoice_id = invoices.id`).
-					Where(`(invoices.name ILIKE ? OR invoices.description ILIKE ? OR materials.name ILIKE ? OR notes.message ILIKE ?) AND invoices.status = ?`, query, query, query, query, "Late")
+					Joins(`JOIN invoice_materials on invoice.id = invoice_materials.invoice_id JOIN material on material.id = invoice_materials.material_id 
+				JOIN note on note.invoice_id = invoice.id`).
+					Where(`(invoice.name ILIKE ? OR invoice.description ILIKE ? OR invoice.cust_email ILIKE ? OR invoice.contr_email ILIKE ? OR material.name ILIKE ? OR note.message ILIKE ?) AND invoice.status = ?`, query, query, query, query, query, query, "Late")
 			} else {
 				filteredInvcs = models.GetDB().Model(&models.Invoice{}).
-					Joins(`JOIN invoice_materials on invoices.id = invoice_materials.invoice_id JOIN materials on materials.id = invoice_materials.material_id 
-				JOIN notes on notes.invoice_id = invoices.id`).
-					Where(`invoices.name ILIKE ? OR invoices.description ILIKE ? OR materials.name ILIKE ? OR notes.message ILIKE ?`, query, query, query, query)
+					Joins(`JOIN invoice_materials on invoice.id = invoice_materials.invoice_id JOIN material on materials.id = invoice_materials.material_id 
+				JOIN note on note.invoice_id = invoice.id`).
+					Where(`invoice.name ILIKE ? OR invoice.description ILIKE ? OR invoice.cust_email ILIKE ? OR invoice.contr_email ILIKE ? OR material.name ILIKE ? OR note.message ILIKE ?`, query, query, query, query, query, query)
 			}
 			filteredInvcs.Count(&count) //from https://github.com/jinzhu/gorm/issues/1007; count doesn't work in same line as limit & offset
 			err = filteredInvcs.Limit(limit).Offset(offset).Preload("Notes").Preload("Materials").Find(&invcs).Error
 		} else { //https://github.com/jinzhu/gorm/issues/1752 quod superioris^ sicut inferioris
-			allInvcs := models.GetDB().Model(&models.Invoice{})
+			var allInvcs *gorm.DB
+			if onlyLate := string(ctx.Request.Header.Peek("OnlyLate")); onlyLate != "" {
+				allInvcs = models.GetDB().Model(&models.Invoice{}).Where(`invoice.status = ?`, "Late")
+			} else {
+				allInvcs = models.GetDB().Model(&models.Invoice{})
+			}
 			allInvcs.Count(&count)
 			err = allInvcs.Limit(limit).Offset(offset).Preload("Notes").Preload("Materials").Find(&invcs).Error
 		}
@@ -74,29 +77,35 @@ func GetManyInvoices(ctx *fasthttp.RequestCtx) {
 			var filteredInvcs *gorm.DB
 			if onlyLate := string(ctx.Request.Header.Peek("OnlyLate")); onlyLate != "" {
 				filteredInvcs = models.GetDB().Model(&models.Invoice{}).
-					Joins(`JOIN invoice_materials on invoices.id = invoice_materials.invoice_id JOIN materials on materials.id = invoice_materials.material_id 
-				JOIN notes on notes.invoice_id = invoices.id`).
-					Where(`invoices.`+idStr+`_id = ? AND (invoices.name ILIKE ? OR invoices.description ILIKE ? OR invoices.cust_email ILIKE ? OR invoices.contr_email ILIKE ? OR materials.name ILIKE ? OR notes.message ILIKE ?) AND invoices.status = ?`, UserID, query, query, query, query, query, query, "Late")
+					Joins(`JOIN invoice_materials on invoice.id = invoice_materials.invoice_id JOIN material on material.id = invoice_materials.material_id 
+				JOIN note on note.invoice_id = invoice.id`).
+					Where(`invoice.`+idStr+`_id = ? AND (invoice.name ILIKE ? OR invoice.description ILIKE ? OR invoice.cust_email ILIKE ? OR invoice.contr_email ILIKE ? OR material.name ILIKE ? OR note.message ILIKE ?) AND invoice.status = ?`, UserID, query, query, query, query, query, query, "Late")
 			} else {
 				filteredInvcs = models.GetDB().Model(&models.Invoice{}).
-					Joins(`JOIN invoice_materials on invoices.id = invoice_materials.invoice_id JOIN materials on materials.id = invoice_materials.material_id 
-				JOIN notes on notes.invoice_id = invoices.id`).
-					Where(`invoices.`+idStr+`_id = ? AND (invoices.name ILIKE ? OR invoices.description ILIKE ? OR invoices.cust_email ILIKE ? OR invoices.contr_email ILIKE ? OR materials.name ILIKE ? OR notes.message ILIKE ?)`, UserID, query, query, query, query, query, query)
+					Joins(`JOIN invoice_materials on invoice.id = invoice_materials.invoice_id JOIN material on material.id = invoice_materials.material_id 
+				JOIN note on note.invoice_id = invoice.id`).
+					Where(`invoice.`+idStr+`_id = ? AND (invoice.name ILIKE ? OR invoice.description ILIKE ? OR invoice.cust_email ILIKE ? OR invoice.contr_email ILIKE ? OR material.name ILIKE ? OR note.message ILIKE ?)`, UserID, query, query, query, query, query, query)
 			}
 			filteredInvcs.Count(&count) //from https://github.com/jinzhu/gorm/issues/1007; count doesn't work in same line as limit & offset
 			err = filteredInvcs.Limit(limit).Offset(offset).Preload("Notes").Preload("Materials").Find(&invcs).Error
 		} else { //https://github.com/jinzhu/gorm/issues/1752 quod superioris^ sicut inferioris
-			allInvcs := models.GetDB().Model(&models.Invoice{})
+			var allInvcs *gorm.DB
+			if onlyLate := string(ctx.Request.Header.Peek("OnlyLate")); onlyLate != "" {
+				allInvcs = models.GetDB().Model(&models.Invoice{}).
+					Where(`invoice.`+idStr+`_id = ? AND invoice.status = ?`, UserID, "Late")
+			} else {
+				allInvcs = models.GetDB().Model(&models.Invoice{}).
+					Where(`invoice.`+idStr+`_id = ?`, UserID)
+			}
 			allInvcs.Count(&count)
 			err = allInvcs.Limit(limit).Offset(offset).Preload("Notes").Preload("Materials").Find(&invcs).Error
 		}
 		if err != nil {
 			middleware.ResponseMaker(ctx, fasthttp.StatusInternalServerError, false, "Connection Error.", "noData")
 		}
-
 	}
 
-	data := map[string]interface{}{"invcs": invcs, "place": place, "pagination": map[string]interface{}{"offset": offset, "limit": limit, "count": count, "place": place}}
+	data := map[string]interface{}{"invoices": invcs, "place": place, "pagination": map[string]interface{}{"offset": offset, "limit": limit, "count": count, "place": place}}
 
 	middleware.ResponseMaker(ctx, fasthttp.StatusOK, true, "Paginating Invcs.", data)
 } //https://github.com/pilagod/gorm-cursor-paginator, no longer using going w/ default gorm paging table approach
@@ -130,9 +139,9 @@ func ChangeLineItems(ctx *fasthttp.RequestCtx) {
 	type invChange struct {
 		Name          string            `json:"firmName"`
 		Description   string            `json:"angelOrFirm"`
-		BillableHours float64           `json:"billHrs"`
+		BillableHours float64           `json:"billableHrs"`
 		WageRate      float64           `json:"wageRate"`
-		SupplyCost    float64           `json:"suppCost"`
+		SupplyCost    float64           `json:"supplyCost"`
 		Materials     []models.Material `json:"materials"`
 		Notes         []models.Note     `json:"notes"`
 	}
@@ -178,7 +187,7 @@ func GetInvoice(ctx *fasthttp.RequestCtx) {
 	ID, _ := uuid.FromString(ctx.UserValue("ID").(string))
 
 	inv := &models.Invoice{}
-	err := models.GetDB().Table("invoice").Where("id = ?", ID).Find(inv)
+	err := models.GetDB().Table("invoice").Where("id = ?", ID).Preload("Materials").Preload("Notes").Find(inv)
 	if err != nil {
 		middleware.ResponseMaker(ctx, fasthttp.StatusInternalServerError, false, "Error Getting Invoice.", "noData")
 		return
@@ -195,13 +204,20 @@ func GetFormItems(ctx *fasthttp.RequestCtx) {
 		middleware.ResponseMaker(ctx, fasthttp.StatusInternalServerError, false, "Connection Error.", "noData")
 		return
 	}
-	custEmails := []string{}
+	cE := []struct {
+		Email string     `json:"email"`
+		ID    *uuid.UUID `json:"id"`
+	}{}
 	cust := []models.Usertype{}
 	models.GetDB().Table("usertype").Where("role = ?", "Customer").Find(&cust)
+	type custEmails struct {
+		Email string     `json:"email"`
+		ID    *uuid.UUID `json:"id"`
+	}
 	for _, cust := range cust {
-		custEmails = append(custEmails, cust.Email)
+		cE = append(cE, custEmails{Email: cust.Email, ID: cust.ID})
 	}
 
-	middleware.ResponseMaker(ctx, fasthttp.StatusOK, true, "Got Invoice EditCr8 Form Items.", map[string]interface{}{"materials": mats, "custEmails": custEmails})
+	middleware.ResponseMaker(ctx, fasthttp.StatusOK, true, "Got Invoice EditCr8 Form Items.", map[string]interface{}{"materials": mats, "custEmails": cE})
 	return
 }

@@ -1,4 +1,6 @@
-import { Res, PostOptions, Login, Register, invListSucc, invListReq, User, GetOptions, FrgnField, Invoice, editcr8Succ, getFormSucc, obj } from './models'
+import { EditInvoiceState } from '../../reducers/EditInvoiceReducer'
+import { Res, PostOptions, Login, Register, invListSucc, invListReq, User, GetOptions,
+    FrgnField, Invoice, editcr8Succ, getFormSucc, obj, editcr8Req } from './models'
 
 var postOptions = new PostOptions()
 var getOptions = new GetOptions()
@@ -11,6 +13,9 @@ const handleResponse = (res: Response): Promise<{[x:string]: any}|string> => {
                 reject(resp)
             }
             resolve(resp.data)
+        })
+        .catch(r => { 
+            reject({message: r.stack, status: false, data: {}}) 
         });
     });
 }
@@ -22,7 +27,6 @@ const handleNoResponse = (err: Res|Error): Res => {
 }
 
 const auth = {
-    //DONE change all these promises to be the data after handleResponse parses sXcRes
     login: (email: string, password: string): Promise<Login> => {
         postOptions.body = JSON.stringify({email, password})
         console.log(postOptions.body)
@@ -57,10 +61,15 @@ const auth = {
 }
 
 const invoice = {
-    createinv: (inv: Invoice, materials: FrgnField[], materialsChecked: string[], stringtoMats: obj): Promise<editcr8Succ> => {
-        postOptions.body = JSON.stringify(inv)
-        inv.materials = []
+    createinv: ({materials, materialsChecked, stringtoMats}: editcr8Req, edcr8Red: EditInvoiceState): Promise<editcr8Succ> => {
+        let inv: Invoice = new Invoice()
         materialsChecked.forEach(m => inv.materials.push(materials[stringtoMats[m]]))
+        let { name, description, billableHrs, wageRate, supplyCost, custEmails, custEmail, invoice } = edcr8Red
+        inv.name = name; inv.description = description; inv.billableHrs = parseFloat(billableHrs); inv.wageRate = parseFloat(wageRate);
+        inv.supplyCost = parseFloat(supplyCost); inv.notes = invoice.notes; inv.custEmail = custEmail; inv.contrEmail = edcr8Red.user.email;
+        inv.contrID = edcr8Red.user.ID
+        custEmails.forEach(c => c.email === custEmail?inv.custID=c.id:null)
+        postOptions.body = JSON.stringify(inv)
         return new Promise( (resolve: (value: editcr8Succ | PromiseLike<editcr8Succ>) => void, reject: (err: Res) => void) => {
             fetch(`${serverURL}/api/invc/create`, postOptions)
             .then( response => {
@@ -74,7 +83,7 @@ const invoice = {
         })
     },
 
-        getmanyinvs: ({offset, limit, query, place}: invListReq, curPg: number, usr: User): Promise<invListSucc> => {
+    getmanyinvs: ({offset, limit, query, place}: invListReq, curPg: number, usr: User): Promise<invListSucc> => {
         return new Promise( (resolve: (value: invListSucc | PromiseLike<invListSucc>) => void, reject: (err: Res) => void) => {
             let pL = place as string
             if (query) {
@@ -84,7 +93,7 @@ const invoice = {
             }
             if (usr.role === 'Admin') {
                 getOptions.headers['Admin'] = "True"
-            }
+            } else getOptions.headers['Role'] = usr.role
             fetch(`${serverURL}/api/invc/getmany/${usr.ID}`, getOptions)
             .then( response => {
                 handleResponse(response).then( data => {

@@ -7,12 +7,12 @@ import { history } from '../App'
 export interface EditInvoiceState {
     name: string
     description: string
-    billableHrs: number
-    wageRate: number
-    supplyCost: number
+    billableHrs: string
+    wageRate: string
+    supplyCost: string
     status: string
     materials: FrgnField[]
-    custEmails: string[]
+    custEmails: {email: string, id: string}[]
     notes: FrgnField[]
     materialsChecked: string[]
     editOrCreate: string
@@ -27,7 +27,7 @@ export interface EditInvoiceState {
 }
 
 export const editInvinitialState: EditInvoiceState = {
-    name: "", description: "", billableHrs: 0.5, wageRate: 0.0, supplyCost: 0.0, status: 'Ready', materials: [], notes: [], materialsChecked: [],
+    name: "", description: "", billableHrs: '0.5', wageRate: '0.0', supplyCost: '0.0', status: 'Ready', materials: [], notes: [], materialsChecked: [],
     editOrCreate: "Create", error: "", errOpen: false, note: "", user: new User(), custEmails: [], stringtoMats: {}, custEmail: "",
     invoice: new Invoice()
 }
@@ -47,11 +47,11 @@ const editInvReducer: Reducer<EditInvoiceState, EditInvoiceAction> = (state: Edi
             console.log(action.payload.inv)
             if(action.payload.notes) {
                 return {
-                    ...state, invoice: action.payload.inv, notes: action.payload.notes
+                    ...state, invoice: action.payload.inv, notes: action.payload.notes, user: action.payload.usr
                 }
             } else {
                 return {
-                    ...state, invoice: action.payload.inv
+                    ...state, invoice: action.payload.inv, user: action.payload.usr
                 }
             }
 
@@ -59,7 +59,7 @@ const editInvReducer: Reducer<EditInvoiceState, EditInvoiceAction> = (state: Edi
             let notes = state.invoice!.notes
             notes.push({message: action.payload.n})
             return {
-                ...state, invoice: {...state.invoice, notes}
+                ...state, invoice: {...state.invoice, notes}, note: ""
             }
 
         case getType(EditInvoiceAction.editOrCreateInv.success):

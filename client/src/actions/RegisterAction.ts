@@ -4,6 +4,7 @@ import { switchMap, mergeMap, filter, catchError } from 'rxjs/operators'
 import { from, of } from 'rxjs'
 import {RootAction, RootState, Services } from 'MyTypes'
 import { Res, epicErr, Register, regSucc } from './services/models'
+import { HeaderAction } from '.'
 
 const doReg = createAsyncAction(
     '@@register/REGISTER_REQUEST',
@@ -35,7 +36,7 @@ action$.pipe(
                 (data: Register) => {
                     localStorage.saveItem('user', data.user)
                     localStorage.saveItem('token', data.token)
-                    return of( doReg.success({firstName: "", lastName: "", email: "", password: "", confirmPassword: "", isCust: false, isContr: false, user: data.user}))
+                    return of( HeaderAction.setUserSigned(data.user), doReg.success({firstName: "", lastName: "", email: "", password: "", confirmPassword: "", isCust: false, isContr: false, user: data.user}))
                 }
             ),
             catchError(

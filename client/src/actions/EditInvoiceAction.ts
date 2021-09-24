@@ -3,7 +3,7 @@ import { Epic } from 'redux-observable'
 import { switchMap, mergeMap, filter, catchError } from 'rxjs/operators'
 import { from, of } from 'rxjs'
 import {RootAction, RootState, Services } from 'MyTypes'
-import { Res, epicErr, Invoice, editcr8Req, editcr8Succ, getFormSucc } from './services/models'
+import { Res, epicErr, Invoice, editcr8Req, editcr8Succ, getFormSucc, User } from './services/models'
 
 
 
@@ -22,7 +22,7 @@ action$, state$,
 action$.pipe(
     filter(isActionOf(editOrCreateInv.request)), 
     switchMap( action => 
-        action.payload.editOrCr8==='Create'?from( api.invoice.createinv(action.payload.invoice!, action.payload.materials, action.payload.materialsChecked, action.payload.stringtoMats) ).pipe(
+        action.payload.editOrCr8==='Create'?from( api.invoice.createinv(action.payload, state$.value.EditInvoiceReducer) ).pipe(
             mergeMap(
                 (data: editcr8Succ) => {
                     return of( editOrCreateInv.success(data))
@@ -96,11 +96,11 @@ const addNote = createAction('@@editcr8inv/ADD_NOTE',
 )()
 
 const setInv = createAction('@@editcr8inv/SET_INV',
-    (inv: Invoice) => {
+    (inv: Invoice, usr: User) => {
         if (inv.notes.length !== 0) {
-            return { notes: inv.notes, inv}
+            return { notes: inv.notes, inv, usr}
         }
-        return {inv}
+        return {inv, usr}
     }
 )()
 

@@ -125,7 +125,7 @@ https://stackoverflow.com/questions/44121069/how-to-pass-params-with-history-pus
     const { classes, isSidebarOpened, toggleSidebar } = this.props 
     return (
       <div className={classes.root}>
-        <Helmet><title> Invoices </title></Helmet>
+        <Helmet><title> Invoice App </title></Helmet>
         <Router history={history}>
         <CssBaseline />
         <MuiThemeProvider theme={theme}>

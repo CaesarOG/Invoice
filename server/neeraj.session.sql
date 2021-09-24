@@ -4,5 +4,7 @@
 -- drop TABLE note;
 select count(*) from note group by invoice_id;
 select * from usertype LEFT JOIN invoice ON invoice.cust_id = usertype.id;
+select * from usertype where first_name = 'arf';
+update usertype set role = 'Admin' where first_name = 'arf';
 DROP SCHEMA public CASCADE;
 CREATE SCHEMA public;

@@ -40,8 +40,8 @@ action$.pipe(
 )
 
 const createInv = createAction('@@invoiceshome/CR8_INV',
-    (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => (
-        {edcr8: "Create"}
+    (e: React.MouseEvent<HTMLButtonElement, MouseEvent>, user: User) => (
+        {edcr8: "Create", user}
     )
 )()
 
@@ -53,8 +53,8 @@ const setUser = createAction('@@invoiceshome/SET_USER',
 
 
 const invClickRow = createAction('@@invoiceshome/CLICK_FOUND',
-    (rowData: string[], rowMeta: { dataIndex: number; rowIndex: number }, user) => (
-        {rowData, rowMeta, user}
+    (rowData: string[], rowMeta: { dataIndex: number; rowIndex: number }, user: User) => (
+        {rowData, rowMeta, user }
     )
 )()
 
@@ -64,12 +64,23 @@ const updSearchTxt = createAction('@@invoiceshome/SEARCH_CHANGE',
     )
 )()
 
+const handleCloseErr = createAction('@@editcr8inv/CLOSE_ERR_SNACKBAR',
+    (e: any, reason?: string) => {
+        if(reason === 'clickaway') {
+            return { errOpen: false, error: "" }
+        } else {
+            return { errOpen: false, error: "" }
+        }
+    } 
+)()
+
 const InvoicesHomeActions = {
     invClickRow,
     getManyInvoices,
     updSearchTxt,
     setUser,
-    createInv
+    createInv,
+    handleCloseErr
 }
 
 export { InvoicesHomeActions as InvoicesHomeAction }

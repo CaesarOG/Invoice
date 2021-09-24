@@ -3,7 +3,7 @@ import { Epic } from 'redux-observable'
 import { switchMap, mergeMap, filter, catchError } from 'rxjs/operators'
 import { from, of } from 'rxjs'
 import {RootAction, RootState, Services } from 'MyTypes'
-import { Res, epicErr, Invoice, getInvModel } from './services/models'
+import { Res, epicErr, Invoice, getInvModel, User } from './services/models'
 
 const getInvoice = createAsyncAction(
     '@@invoicedet/GET_INV_REQUEST',
@@ -36,8 +36,14 @@ action$.pipe(
 )
 
 const editcr8 = createAction('@@invoicedet/TO_EDITCR8',
-    (inv: Invoice) => {
-        return { inv }
+    (inv: Invoice, usr: User) => {
+        return { inv, usr }
+    }
+)()
+
+const setInv = createAction('@@editcr8inv/SET_INV',
+    (inv: Invoice, id: string, usr: User) => {
+        return {inv, id, usr}
     }
 )()
 
@@ -50,7 +56,8 @@ const editcr8 = createAction('@@invoicedet/TO_EDITCR8',
 
 const invoiceDetActions = {
     editcr8,
-    getInvoice
+    getInvoice,
+    setInv
 }
 
 export { invoiceDetActions as InvoiceDetAction }

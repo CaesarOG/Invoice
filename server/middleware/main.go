@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	corsAllowHeaders     = "authorization, Authorization, Content-Type, Access-Control-Allow-Headers, Offset, Limit, Place, Query, EditScreen, timepd"
+	corsAllowHeaders     = "authorization, Authorization, Content-Type, Access-Control-Allow-Headers, Accept, Offset, Limit, Place, Query, EditScreen, timepd, Admin, OnlyLate, Role"
 	corsAllowMethods     = "HEAD,GET,POST,PUT,DELETE,OPTIONS"
 	corsAllowOrigin      = "*"
 	corsAllowCredentials = "true"
@@ -78,7 +78,7 @@ func JWT(next fasthttp.RequestHandler) fasthttp.RequestHandler {
 		}
 
 		user := &models.Usertype{}
-		errU := models.GetDB().Table("user").Where("id = ?", tk.UserID).First(user).Error
+		errU := models.GetDB().Table("usertype").Where("id = ?", tk.UserID).First(user).Error
 		if errU != nil {
 			if errU == gorm.ErrRecordNotFound {
 				ResponseMaker(ctx, fasthttp.StatusUnauthorized, false, "User Not Found.", "noData")

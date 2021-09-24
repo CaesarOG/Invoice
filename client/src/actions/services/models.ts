@@ -13,7 +13,9 @@ export interface Invoice {
     notes: FrgnField[]
     custEmail: string
     contrEmail: string
-    due: Date
+    dueDate: Date
+    custID: string
+    contrID: string
 
 }
 
@@ -44,7 +46,7 @@ export class User implements IUser {
 
 export const Invoice = function () { 
     let inv: Invoice = { name: '', description: '', billableHrs: 3.2, wageRate: 12, supplyCost: 13.2, status: '', 
-    materials: [], notes: [], due: new Date(), custEmail: "", contrEmail: ""}
+    materials: [], notes: [], dueDate: new Date(), custEmail: "", contrEmail: "", contrID: "", custID: ""}
     return inv
 } as any as { new (): Invoice; };
 
@@ -66,10 +68,10 @@ export interface Login extends Register {
 export type signReq = {email: string, password: string}; export type signSucc = {user: User, email: string, password: string};
 export type regSucc = {firstName: string, lastName: string, email: string, password: string, confirmPassword: string, isCust: boolean, isContr: boolean, user: User}; 
 
-export type editcr8Req = {invoice: Invoice, editOrCr8: string, id?: string, materials: FrgnField[], materialsChecked: string[], stringtoMats: {[x: string]: any}}
+export type editcr8Req = {invoice?: Invoice, editOrCr8: string, id?: string, materials: FrgnField[], materialsChecked: string[], stringtoMats: {[x: string]: any}}
 export type editcr8Succ = {invoice: Invoice}
 
-export type getFormSucc = {materials: FrgnField[], custEmails: string[], stringtoMats?: {[x:string]: any}, invoice?: Invoice, id?: string, edCr8: string}
+export type getFormSucc = {materials: FrgnField[], custEmails: {email: string, id: string}[], stringtoMats?: {[x:string]: any}, invoice?: Invoice, id?: string, edCr8: string}
 
 export type getInvModel = {inv?: Invoice, id?: string, user: User}
 
@@ -88,7 +90,7 @@ export class PostOptions {
 }
 export class GetOptions {
     method: string = 'GET'
-    headers: {[x:string]: string} = {}
+    headers: {[x:string]: string} = {'Accept': 'application/json'}
 }
 
 export const createPropsGetter = <DP extends object>(defaultProps: DP) => {

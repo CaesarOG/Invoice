@@ -9,7 +9,7 @@ import { Avatar, Paper, Snackbar, Typography, Grid, createStyles, Button,
 import { EditInvoiceAction } from '../actions'
 import MySnackbarContent from './MySnackbarContent'
 import { editInvinitialState, EditInvoiceState } from '../reducers/EditInvoiceReducer'
-import { FrgnField, createPropsGetter, Invoice, obj } from '../actions/services/models';
+import { FrgnField, createPropsGetter, Invoice, obj, User } from '../actions/services/models';
 import { RouteComponentProps } from 'react-router';
 //import { timeInterval } from 'rxjs/operators';
 
@@ -151,28 +151,30 @@ const MenuProps = {
 class EditInvoice extends React.Component<Props, {}> {
  
   componentDidMount() {
-    const id = this.props.match?.params.id as string
+    //const id = this.props.match?.params.id as string
     let invoice: Invoice = (this.props.location!.state as obj) && (this.props.location!.state as obj).invoice
     let edCr8: string = (this.props.location!.state as obj) && (this.props.location!.state as obj).edcr8
+    let user: User = (this.props.location!.state as obj) && (this.props.location!.state as obj).user
     invoice = (!invoice || !invoice.name) ? new Invoice():invoice
-    this.props.setInv!(invoice)
+    this.props.setInv!(invoice, user)
     if(!invoice || !invoice.name) this.props.getInvItems!({edCr8})
     else this.props.getInvItems!({edCr8})
   }
 
   render() {
     const { classes, error, errOpen, handleCloseErr, handleChangeSelect, handleChange, custEmails, editcr8Req, stringtoMats,
-      materials, materialsChecked, notes, handleChangeSingleSel, invoice, note, addNote, editOrCreate,
+      materials, materialsChecked, handleChangeSingleSel, invoice, note, addNote, editOrCreate,
       description, name, billableHrs, wageRate, supplyCost, custEmail } = getProps(this.props)
+    let stepTxt = [['Click Edit', 'Editing Invoice'], ['Click Create', 'Creating Invoice']]
 
     return (
       <div className={classes.root} > {/*was a React.Fragment, switched to div for className*/}
       <CssBaseline />
       <Typography component="h1" variant="h4" align="center" className={classes.typog}>
-        Create or Edit Invoice
+        {editOrCreate==='Create'?"Create Invoice":"Edit Invoice"}
       </Typography>
       <Stepper activeStep={1} className={classes.stepper}>
-        {[{lab: 0, txt: 'Click Edit/Create'}, {lab: 1, txt: 'Editing/Creating Invoice'}].map(item => (
+        {[{lab: 0, txt: editOrCreate==='Create'?stepTxt[1][0]:stepTxt[0][0]}, {lab: 1, txt: editOrCreate==='Create'?stepTxt[1][1]:stepTxt[0][1]}].map(item => (
           <Step key={item.lab}>
             <StepLabel>{item.txt}</StepLabel>
           </Step>
@@ -185,19 +187,20 @@ class EditInvoice extends React.Component<Props, {}> {
               <Grid item xs={12} >
                 <Box component="form">
                   <div>
-                    <TextField label="Name" placeholder="Name" className={classes.textField} name="invoice.name" value={name}
+                    <TextField label="Name" placeholder="Name" className={classes.textField} name="name" value={name}
                       onChange={handleChange} margin="normal" variant="outlined" />
                     <TextField label="Description" placeholder="Description" className={classes.textField} name="description" value={description}
                       onChange={handleChange} margin="normal" variant="outlined" />
                     <TextField label="Billable Hrs" placeholder="1.0" className={classes.textField} name="billableHrs" value={billableHrs}
-                      onChange={handleChange} margin="normal" variant="outlined" />
+                      onChange={handleChange} margin="normal" variant="outlined" type="number" />
                     <TextField label="Wage Rate" placeholder="1.0" className={classes.textField} name="wageRate" value={wageRate}
-                      onChange={handleChange} margin="normal" variant="outlined" />
+                      onChange={handleChange} margin="normal" variant="outlined" type="number" />
                     <TextField label="Supply Cost" placeholder="1.0" className={classes.textField} name="supplyCost" value={supplyCost}
-                      onChange={handleChange} margin="normal" variant="outlined" />
+                      onChange={handleChange} margin="normal" variant="outlined" type="number" />
                   </div>
                 </Box>
               </Grid>
+              {editOrCreate !== "Edit" && (
               <Grid item xs={12}>
                   <FormControl variant="outlined" required className={classes.inpWidth} fullWidth>
                     <InputLabel htmlFor="custEmail">Select Customer</InputLabel>
@@ -205,11 +208,12 @@ class EditInvoice extends React.Component<Props, {}> {
                       onChange={handleChangeSingleSel} input={<Input id="custEmail" className={classes.inpWidth} fullWidth/>} MenuProps={MenuProps}
                     >
                       {custEmails.map( ce => (
-                        <MenuItem key={ce+"Cm"} value={ce}> {ce} </MenuItem>
+                        <MenuItem key={ce.email+"Cm"} value={ce.email}> {ce.email} </MenuItem>
                       ))}
                     </Select>
                   </FormControl>
               </Grid>
+              )}
               { (materials && materials.length !== 0) && (
               <React.Fragment>
                 <Grid item xs={12}>
@@ -241,14 +245,14 @@ class EditInvoice extends React.Component<Props, {}> {
                       <React.Fragment>
                       <ListItem alignItems="flex-start">
                       <ListItemAvatar>
-                        <Avatar alt="Note">NT</Avatar>
+                        <Avatar alt="Note">{note.message!.slice(0, 2).toUpperCase()}</Avatar>
                       </ListItemAvatar>
-                      <ListItemText primary="Note on Invoice" secondary = {
+                      <ListItemText primary={note.message!.split(' ').slice(0,2).join(" ")+"..."} secondary = {
                           <React.Fragment>
                             <Typography component="span" variant="body2">
-                              Note Name
+                              {note.message!}  
                             </Typography>
-                            {note.message!}
+                            {"  "}
                           </React.Fragment>
                         }
                       />
@@ -261,15 +265,14 @@ class EditInvoice extends React.Component<Props, {}> {
                 )}
                 <Grid item xs={12}>
                   <FormControl required>
-                  <InputLabel htmlFor="note">Note</InputLabel>
-                    <TextField label="Note" multiline rows={4} placeholder="A Note." className={classes.textField} name="note" value={note}
+                    <TextField label="Note" multiline rows={4} placeholder="Text" className={classes.textField} name="note" value={note}
                       onChange={handleChange} margin="normal" variant="outlined" />
                   <Button variant="contained" color="primary" onClick={(e) => {addNote(note)}} className={classes.button}> Add Note </Button>
                   </FormControl>
 
                 </Grid>
                 <Grid item xs={12}>
-                  <Button variant="contained" color="primary" onClick={(e) => editcr8Req({invoice, materials, materialsChecked, editOrCr8: editOrCreate, stringtoMats})} 
+                  <Button variant="contained" color="primary" onClick={(e) => editcr8Req({materials, materialsChecked, editOrCr8: editOrCreate, stringtoMats})} 
                     className={classes.button}> {editOrCreate==="Create"?"Create Invoice":"Apply Edit Invoice"} </Button>
                 </Grid>
 

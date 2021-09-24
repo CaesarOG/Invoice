@@ -27,8 +27,9 @@ const invHReducer: Reducer<InvoicesHomeState, InvoicesHomeAction> = (state: Invo
     switch(action.type) {
 
         case getType(InvoicesHomeAction.createInv):
-            history.push(`/editcr8`, {edcr8: action.payload.edcr8})
+            setTimeout(() => history.push(`/editcr8`, {edcr8: action.payload.edcr8, user: action.payload.user}), 100)
             return state
+
         
         case getType(InvoicesHomeAction.getManyInvoices.failure):
             return {
@@ -42,7 +43,8 @@ const invHReducer: Reducer<InvoicesHomeState, InvoicesHomeAction> = (state: Invo
 
         case getType(InvoicesHomeAction.invClickRow):
             let inv: Invoice = state.list[action.payload.rowMeta.dataIndex]
-            history.push(`/detail/${action.payload.rowData[0]}`, {inv, user: action.payload.user})
+            inv.dueDate = new Date(inv.dueDate)
+            setTimeout(() => history.push(`/detail/${action.payload.rowData[0]}`, {inv, user: action.payload.user}), 100)
             return state
 
         case getType(InvoicesHomeAction.getManyInvoices.success):
@@ -62,8 +64,14 @@ const invHReducer: Reducer<InvoicesHomeState, InvoicesHomeAction> = (state: Invo
                     ...state, list: action.payload.invoices, limit, place, count: count!, currentPage: offset/limit
                 }
             }
+
             return {
                 ...state
+            }
+
+        case getType(InvoicesHomeAction.handleCloseErr):
+            return {
+                ...state, errOpen: action.payload.errOpen, error: action.payload.error
             }
         
             

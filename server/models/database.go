@@ -13,12 +13,13 @@ import (
 	_ "github.com/lib/pq" //used but not called explicitly
 	"github.com/startupXchange-team/gorm"
 	_ "github.com/startupXchange-team/gorm/dialects/postgres" //used but not called explicitly
+	"golang.org/x/crypto/bcrypt"
 
 	gormigrate "github.com/startupXchange-team/gormigrate"
 )
 
 //AbsPath of code.
-const AbsPath string = "/Users/neeraj/Projects/frontend-homework/" // "/home/ubuntu/staging/"
+const AbsPath string = "/Users/neeraj/Projects/frontend-homework/" // "/home/ubuntu/frontendhw/"
 
 //ServerEnv "$HOME/Projects/sxc/server/.env" .
 const ServerEnv string = AbsPath + "server/.env"
@@ -165,13 +166,24 @@ func InvoicesFromCSV() {
 	} else {
 		daysAdd = 1
 	}
+
+	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(","), bcrypt.DefaultCost)
+	pwd := string(hashedPassword)
+	admin := Usertype{Role: "Admin", Email: "deep", Password: pwd, FirstName: "Ad", LastName: "Min"}
+	y := Usertype{Role: "Contractor", Email: "y@gmail.com", Password: pwd, FirstName: "Contr", LastName: "Actor"}
+	c1 := Usertype{Role: "Customer", Email: "policygradient@gmail.com", Password: pwd, FirstName: "Cust", LastName: "Omer"}
+	c3 := &Usertype{Role: "Customer", Email: "TDlambda@gmail.com", Password: pwd, FirstName: "Cust-3", LastName: "3-Omer"}
+	c2 := Usertype{Role: "Customer", Email: "expectedsarsa@gmail.com", Password: pwd, FirstName: "Cust-2", LastName: "2-Omer"}
+	db.Model(&Usertype{}).Create(&admin).Create(&y).Create(&c1).Create(&c2).Create(c3)
+
 	neeraj, rajiv := &Usertype{}, &Usertype{}
-	a, b := &Usertype{}, &Usertype{}
 	neeraj.Email, rajiv.Email = "neerajram108@gmail.com", "rajivprabhakar@gmail.com"
 	db.Create(neeraj)
 	db.Create(rajiv)
+	a, b := &Usertype{}, &Usertype{}
 	db.Model(&Usertype{}).Where("email = ?", `neerajram108@gmail.com`).Find(a)
-	db.Model(&Usertype{}).Where("email = ?", `rajivprabhakar@gmail.com`).Find(a)
+	db.Model(&Usertype{}).Where("email = ?", `rajivprabhakar@gmail.com`).Find(b)
+
 	for _, line := range linesMat {
 		mat := &Material{Name: line[0]}
 		db.Create(mat)

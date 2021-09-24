@@ -9,7 +9,7 @@ export interface InvoiceDetState {
     user: User
     id: string
 }
- 
+
 export const invcDetInitialState: InvoiceDetState = {
     invoice: new Invoice(), user: new User(), id: ""
 }
@@ -19,7 +19,7 @@ type InvoiceDetAction = ActionType<typeof InvoiceDetAction>;
 const invDetReducer: Reducer<InvoiceDetState, InvoiceDetAction> = (state: InvoiceDetState = invcDetInitialState, action: InvoiceDetAction): InvoiceDetState => {
     switch(action.type) {
         case getType(InvoiceDetAction.editcr8):
-            history.push(`/editcr8`, {...(action.payload), edcr8: "Edit"})
+            history.push(`/editcr8`, {invoice: action.payload.inv, user: action.payload.usr, edcr8: "Edit"})
             return state        
             
         case getType(InvoiceDetAction.getInvoice.success):
@@ -29,6 +29,10 @@ const invDetReducer: Reducer<InvoiceDetState, InvoiceDetAction> = (state: Invoic
         case getType(InvoiceDetAction.getInvoice.failure):
             return {
                 ...state, ...(action.payload)
+            }
+        case getType(InvoiceDetAction.setInv):
+            return {
+                ...state, user: action.payload.usr, id: action.payload.id, invoice: action.payload.inv
             }
         default:
             return state
