@@ -177,7 +177,6 @@ const mapStateToPropsH: MapStateToProps<HeaderState, {}, RootState> = (state: Ro
   notificationsMenu: state.HeaderReducer.notificationsMenu,
   profileMenu: state.HeaderReducer.profileMenu,
   user: state.HeaderReducer.user,
-  ntfnModalOpen: state.HeaderReducer.ntfnModalOpen,
   error: state.HeaderReducer.error,
   errOpen: state.HeaderReducer.errOpen,
   notifications: state.HeaderReducer.notifications,
