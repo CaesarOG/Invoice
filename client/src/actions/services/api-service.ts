@@ -162,35 +162,3 @@ export default {
 
 //used braces to nest the response.json so catch of top-then is syntactically outside. so have to return response.json() 
 //as there are braces. no curlies so only one line, then no explicit return
-
-/**
- * ```javascript
- * return fetch (`${serverURL}/api/buildoauth`, postOptions)
- * .then( response => {
- *     return handleResponse(response)
- *     .then( (data) => {
- *         // return new Promise( (resolve: (value: BuildOauth | PromiseLike<BuildOauth>) => void) => {
- *             return(data as BuildOauth)
- *         // })
- *     })
- *     .catch(handleNoResponse)
- * })
- * .catch(handleNoResponse)
- * 
- * //THIS ABOVE BAD MODEL RETURN FETCH CHANGES TYPE OF PROMISE TO UNION WITH THEN & CATCH, AND THEN INSTEAD OF THE 
- * //from().pipe(map(), catchError()) IN EPICS THAT IS ALLOWED BY THE MODEL I FIGURED OUT USED IN THIS FILE, HAVE 
- * //TO USE FOLLOWING INSIDE the pipe in from(...).pipe() 
- *         
- * mergeMap<BuildOauth|sXcRes, sourceSuccOb|sourceFailOb>(
- *     (dataOrErr: BuildOauth|sXcRes) => {
- *        if( (dataOrErr as BuildOauth).source ) {
- *             let data = dataOrErr as BuildOauth
- *             return of ( sourceUrl.success({source: data.source, url: data.url}))
- *         } else {
- *             let err = dataOrErr as sXcRes
- *             return of ( sourceUrl.failure({error: err.message, errOpen: true}) )
- *         } 
- *     } 
- * ) 
- * ```
- */
